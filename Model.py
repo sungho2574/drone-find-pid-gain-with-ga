@@ -13,18 +13,26 @@ class Model:
         self.pitch = 0
         self.yaw   = 0
 
+        # reference axis
         self.roll_axis  = cylinder(pos=vec(0, 0, -5), axis=vec(0, 0, 10), radius=0.01, color=vec(255, 255, 255))
         self.pitch_axis = cylinder(pos=vec(-5, 0, 0), axis=vec(10, 0, 0), radius=0.01, color=vec(255, 255, 255))
         self.yaw_axis   = cylinder(pos=vec(0, -5, 0), axis=vec(0, 10, 0), radius=0.01, color=vec(255, 255, 255))
 
+        # sub axis which spin with model
         self.roll_guide  = cylinder(pos=vec(0, 0, -5), axis=vec(0, 0, 10), radius=0.01, color=vec(255, 0, 0))
         self.pitch_guide = cylinder(pos=vec(-5, 0, 0), axis=vec(10, 0, 0), radius=0.01, color=vec(0, 0, 255))
         self.yaw_guide   = cylinder(pos=vec(0, -5, 0), axis=vec(0, 10, 0), radius=0.01, color=vec(0, 255, 0))
     
+
     def pos (self, x, y, z):                    # input is not delta
         self.model.pos = vec(x, y, z)
     
+
     def angle (self, roll, pitch, yaw):         # input is not delta
+        # there is only rotate method
+        # but i want to get input as roll, pitch, yaw, which is not delta angle
+        # so i sperate angle method and rotate method
+
         self.delta_roll  = roll -  self.roll
         self.delta_pitch = pitch - self.pitch
         self.delta_yaw   = yaw -   self.yaw
@@ -38,12 +46,17 @@ class Model:
         self.rotate(self.pitch_guide, self.delta_roll, self.delta_pitch, self.delta_yaw)
         self.rotate(self.yaw_guide,   self.delta_roll, self.delta_pitch, self.delta_yaw)
     
+
     def rotate (self, obj, delta_roll, delta_pitch, delta_yaw):
         obj.rotate(angle=radians(delta_roll),  axis=vector(0, 0, 1), origin=self.model.pos)
         obj.rotate(angle=radians(delta_pitch), axis=vector(1, 0, 0), origin=self.model.pos)
         obj.rotate(angle=radians(delta_yaw),   axis=vector(0, 1, 0), origin=self.model.pos)
 
-    def obj_to_triangles(self, obj): # specify object
+
+    def obj_to_triangles(self, obj):        
+        # it makes possible to load obj model in vpython
+        # https://groups.google.com/g/vpython-users/c/T3SzNheUOAg
+
         tris = [] # list of triangles to compound
         ret = [] # will return a list obj compounds if necessary
         # Iterate vertex data collected in each material
@@ -131,16 +144,13 @@ class Model:
 
 
 
-
 if __name__ == '__main__':
-    scene = canvas()
-    scene.ambient=color.gray(0.5)
-
     scene.height = 1000
     scene.width = 1000
 
     mavic = Model('model/mavic.obj')
-    i =0 
+
+    i = 0 
     while True:
         rate(60)
         mavic.angle(i, -i, 0)
