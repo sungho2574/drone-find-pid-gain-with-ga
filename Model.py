@@ -13,12 +13,12 @@ class Model:
         self.pitch = 0
         self.yaw   = 0
 
-        # reference axis
+        # reference axises
         self.roll_axis  = cylinder(pos=vec(0, 0, -5), axis=vec(0, 0, 10), radius=0.01, color=vec(255, 255, 255))
         self.pitch_axis = cylinder(pos=vec(-5, 0, 0), axis=vec(10, 0, 0), radius=0.01, color=vec(255, 255, 255))
         self.yaw_axis   = cylinder(pos=vec(0, -5, 0), axis=vec(0, 10, 0), radius=0.01, color=vec(255, 255, 255))
 
-        # sub axis which spin with model
+        # sub axises, which spin with model
         self.roll_guide  = cylinder(pos=vec(0, 0, -5), axis=vec(0, 0, 10), radius=0.01, color=vec(255, 0, 0))
         self.pitch_guide = cylinder(pos=vec(-5, 0, 0), axis=vec(10, 0, 0), radius=0.01, color=vec(0, 0, 255))
         self.yaw_guide   = cylinder(pos=vec(0, -5, 0), axis=vec(0, 10, 0), radius=0.01, color=vec(0, 255, 0))
@@ -153,6 +153,6 @@ if __name__ == '__main__':
     i = 0 
     while True:
         rate(60)
-        mavic.angle(i, -i, 0)
+        mavic.angle(i, -i, i)
         i += 1
 

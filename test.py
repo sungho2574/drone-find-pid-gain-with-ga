@@ -1,14 +1,5 @@
-import matplotlib.pyplot as plt
+import pandas as pd
 import numpy as np
+df  = pd.read_csv('mass/test.csv')
 
-np.random.seed(0)
-
-n = 50
-x = np.random.rand(n)
-y = np.random.rand(n)
-area = (30 * np.random.rand(n))**2
-colors = np.random.rand(n)
-
-plt.scatter(x, y, s=area, c=colors, alpha=0.5, cmap='Spectral')
-plt.colorbar()
-plt.show()
+print(df.dm.values.sum())
