@@ -28,7 +28,7 @@ class Model:
         self.model.pos = vec(x, y, z)
     
 
-    def angle (self, roll, pitch, yaw):         # input is not delta
+    def ang (self, roll, pitch, yaw):         # input is not delta
         # there is only rotate method
         # but i want to get input as roll, pitch, yaw, which is not delta angle
         # so i sperate angle method and rotate method

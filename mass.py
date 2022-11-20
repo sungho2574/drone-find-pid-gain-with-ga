@@ -10,6 +10,8 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
+from vpython import *
+
 # random functions
 # np.random.rand(n: shpae)           : [0, 1) 사이의 실수
 # np.random.uniform(low, high, size) : 입력된 범위 사이의 균등분포 실수
@@ -18,7 +20,7 @@ import matplotlib.pyplot as plt
 
 
 class MassMap:
-    MAVIC_WEIGHT = 740 
+    MAVIC_WEIGHT = 740
 
     def __init__(self, path=None) -> None:
         if path is not None:
@@ -61,7 +63,7 @@ class MassMap:
         self.set_info(mass_map)
 
 
-    def render_maas (self, path, guide=False):
+    def render_maas (self, path, guide=False, cg_guide=False):
         self.load_mass(path)
 
         # rescale for plot
@@ -77,12 +79,15 @@ class MassMap:
         plt.title( 'Mass: %.2fg' % (self.M * 1000))
 
         if guide:
-            plt.axhline(0, -20, 20, color='lightgray', linestyle='--', linewidth=1)
-            plt.axvline(0, -20, 20, color='lightgray', linestyle='--', linewidth=1)
-            plt.text(10  - 3,  10, round(self.quadrant[1], 6), fontsize=12)
-            plt.text(-10 - 3,  10, round(self.quadrant[2], 6), fontsize=12)
-            plt.text(-10 - 3, -10, round(self.quadrant[3], 6), fontsize=12)
-            plt.text(10  - 3, -10, round(self.quadrant[4], 6), fontsize=12)
+            plt.axhline(0, -20, 20, color='gray', linestyle='--', linewidth=1)
+            plt.axvline(0, -20, 20, color='gray', linestyle='--', linewidth=1)
+            plt.text(10  - 3,  10, round(self.m_qdrn[1] * 1000, 2), fontsize=12)
+            plt.text(-10 - 3,  10, round(self.m_qdrn[2] * 1000, 2), fontsize=12)
+            plt.text(-10 - 3, -10, round(self.m_qdrn[3] * 1000, 2), fontsize=12)
+            plt.text(10  - 3, -10, round(self.m_qdrn[4] * 1000, 2), fontsize=12)
+        if cg_guide:
+            plt.axhline(-self.cg_pos.x * 100, -20, 20, color='lightgray', linestyle='--', linewidth=1)
+            plt.axvline( self.cg_pos.z * 100, -20, 20, color='lightgray', linestyle='--', linewidth=1)
 
         plt.show()
 
@@ -94,25 +99,55 @@ class MassMap:
     
     def set_info (self, mass_map):
         self.mass_map = mass_map
-        self.quadrant = np.zeros(5)
+        self.set_inertia()
+        self.set_cg()
+    
+
+    def set_inertia (self):
+        self.I_qdrn = np.zeros(5)
+        self.m_qdrn = np.zeros(5)
+
         for line in self.mass_map.values.tolist():
             x, y, dm = line
             if x >= 0 and y >= 0:                           # quadrant 1
-                self.quadrant[1] += self.set_I(x, y, dm)
+                self.m_qdrn[1] += dm
+                self.I_qdrn[1] += self.set_I(x, y, dm)
             elif x < 0 and y > 0:                           # quadrant 2
-                self.quadrant[2] += self.set_I(x, y, dm)
+                self.m_qdrn[2] += dm
+                self.I_qdrn[2] += self.set_I(x, y, dm)
             elif x < 0 and y < 0:                           # quadrant 3
-                self.quadrant[3] += self.set_I(x, y, dm)
+                self.m_qdrn[3] += dm
+                self.I_qdrn[3] += self.set_I(x, y, dm)
             elif x > 0 and y < 0:                           # quadrant 4
-                self.quadrant[4] += self.set_I(x, y, dm)
+                self.m_qdrn[4] += dm
+                self.I_qdrn[4] += self.set_I(x, y, dm)
+            
         
-        self.I = sum(self.quadrant)
-        self.M = self.mass_map.dm.values.sum()
-    
+        self.I = sum(self.I_qdrn)
+        self.M = sum(self.m_qdrn)
 
+    
     def set_I (self, x, y, dm):
         return dm * (x**2 + y**2)
+    
             
+    def set_cg (self):
+        roll_cg = 0
+        pitch_cg = 0
+        for line in self.mass_map.values.tolist():
+            x, y, dm = line
+            roll_cg  += x*dm
+            pitch_cg += y*dm
+        
+        roll_cg  /= self.M
+        pitch_cg /= self.M
+
+        # apply graphic coordinate
+        self.cg_pos = vec(-roll_cg, 0, pitch_cg)
+
+        
+    
+
 
 
 
@@ -120,8 +155,8 @@ class MassMap:
 if __name__ == "__main__":
     map_maker = MassMap()
 
-    path = 'mass/test.csv'
-    #map_maker.make_mass(path)
-    map_maker.render_maas(path=path, guide=True)
+    path = 'mass/new2.csv'
+    map_maker.make_mass(path)
+    map_maker.render_maas(path=path, guide=True, cg_guide=True)
 
        
