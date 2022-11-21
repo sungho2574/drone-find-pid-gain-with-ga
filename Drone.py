@@ -6,7 +6,7 @@ import numpy as np
 
 class Drone:
 
-    def __init__(self, model_path, dm_path) -> None: 
+    def __init__(self, model_path, dm_path) -> None:
         self.model = Model(model_path)
         self.mass_map = MassMap(dm_path)
 
@@ -35,17 +35,16 @@ class Drone:
 
         if self.visible:
             self.model.pos(self.pos)
-            self.model.ang(self.roll, self.pitch, self.yaw)
+            self.model.ang(self.roll.ang, self.pitch.ang, self.yaw.ang)
     
 
     def gravity (self):
-        g = sum(self.mass_map.m_qdrn) * -self.g
-        F = vec(0, 0, g)
+        F = vec(0, 0, - self.m * self.g)
         self.translational_motion(F)
 
-        self.to_horizon_vec(F, reverse=True)
-        split = self.mass_map.m_qdrn / sum(self.mass_map.m_qdrn)
-        splited_F = [s*F for s in split]
+        drone_perspective_F = self.to_horizon_vec(F, reverse=True)
+        split = self.mass_map.m_qdrn[1:] / sum(self.mass_map.m_qdrn)
+        splited_F = [s*drone_perspective_F for s in split]
         splited_F_size = list(map(mag, splited_F))
         self.rotational_motion(splited_F_size)
 
@@ -66,8 +65,8 @@ class Drone:
         m4 =   roll_mv + pitch_mv - yaw_mv
 
         motors = [m1, m2, m3, m4]
-        F = vec(0, 0, sum(motors))
-        F = self.to_horizon_vec(F)
+        drone_perspective_F = vec(0, 0, sum(motors))
+        F = self.to_horizon_vec(drone_perspective_F)
         self.translational_motion(F)
         self.rotational_motion(motors)
 
@@ -79,11 +78,11 @@ class Drone:
 
 
     def translational_motion(self, F):
-        # a to v
+        # forced: a to v
         a = F / self.m
         self.v += a
 
-        # v to s
+        # 1 second has passed: v to s
         self.pos    += self.v
         self.cg_pos += self.v
     
@@ -94,9 +93,9 @@ class Drone:
            r, p, y = -r, -p, -y
 
         ROLL = np.array([
-            1,      0,       0,
-            0, cos(p),  sin(r),
-            0, -sin(r), cos(r)
+            1,       0,       0,
+            0,  cos(r),  sin(r),
+            0, -sin(r),  cos(r)
 
         ])
         PITCH = np.array([
@@ -117,23 +116,23 @@ class Drone:
 
 
     def rotational_motion(self, F: list):
-        # alpha -> w
+        # forced: alpha -> w
         self.roll.w   += ( (F[2] + F[3]) - (F[1] + F[4]) ) / self.mass_map.I
-        self.pitch.w  += ( (F[3] + F[4]) - (F[1] + F[2]) ) / self.mass_map.I
+        self.pitch.w  += ( (F[1] + F[2]) - (F[3] + F[4]) ) / self.mass_map.I
 
-        # w -> theta
+        # 1 second has passed: w -> theta
+        # An object forced in space rotates around the center of gravity.
+        # But I can only control the object by center of object.
+        # So the displacement of the center point shall be corrected.
         self.roll.ang  += self.roll.w
         self.pitch.ang += self.pitch.w
 
-        # An object forced in space rotates around the center of gravity.
-        # But I can rotate the object only on center of object.
-        # So the displacement of the center point shall be corrected.
         r, p = self.roll.ang, self.pitch.ang
-        cg_to_c = abs(self.pos.x - self.cg_pos.x)
-        self.pos += vec(-cg_to_c * cos(r), cg_to_c * sin(r), 0)
+        cg_to_c = self.pos.x - self.cg_pos.x
+        self.pos = self.cg_pos + vec(cg_to_c * cos(r), cg_to_c * sin(r), 0)
 
-        cg_to_c = abs(self.pos.z - self.cg_pos.z)
-        self.pos += vec(0, cg_to_c * sin(p), cg_to_c * cos(p))
+        cg_to_c = self.pos.z - self.cg_pos.z
+        self.pos = self.cg_pos + vec(0, cg_to_c * sin(p), cg_to_c * cos(p))
 
 
 
@@ -183,7 +182,9 @@ class Drone:
 
     class K:
         def __init__(self, K: list = None) -> None:
-            if K is not None:
+            if K is None:
+                self.setK([0, 0, 0])
+            else:
                 self.setK(K)
 
         def setK (self, K: list):
