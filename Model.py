@@ -14,19 +14,39 @@ class Model:
         self.yaw   = 0
 
         # reference axises
-        self.roll_axis  = cylinder(pos=vec(0, 0, -5), axis=vec(0, 0, 10), radius=0.01, color=vec(255, 255, 255))
-        self.pitch_axis = cylinder(pos=vec(-5, 0, 0), axis=vec(10, 0, 0), radius=0.01, color=vec(255, 255, 255))
-        self.yaw_axis   = cylinder(pos=vec(0, -5, 0), axis=vec(0, 10, 0), radius=0.01, color=vec(255, 255, 255))
+        self.roll_axis  = cylinder(pos=vec(0, 0, 0), axis=vec(0, 0, 10), radius=0.01, color=vec(255, 255, 255))
+        self.pitch_axis = cylinder(pos=vec(0, 0, 0), axis=vec(10, 0, 0), radius=0.01, color=vec(255, 255, 255))
+        self.yaw_axis   = cylinder(pos=vec(0, 0, 0), axis=vec(0, 10, 0), radius=0.01, color=vec(255, 255, 255))
 
         # sub axises, which spin with model
-        self.roll_guide  = cylinder(pos=vec(0, 0, -5), axis=vec(0, 0, 10), radius=0.01, color=vec(255, 0, 0))
-        self.pitch_guide = cylinder(pos=vec(-5, 0, 0), axis=vec(10, 0, 0), radius=0.01, color=vec(0, 0, 255))
-        self.yaw_guide   = cylinder(pos=vec(0, -5, 0), axis=vec(0, 10, 0), radius=0.01, color=vec(0, 255, 0))
+        self.roll_guide  = cylinder(pos=vec(0, 0, 0), axis=vec(0, 0, 10), radius=0.01, color=vec(255, 0, 0))
+        self.pitch_guide = cylinder(pos=vec(0, 0, 0), axis=vec(10, 0, 0), radius=0.01, color=vec(0, 0, 255))
+        self.yaw_guide   = cylinder(pos=vec(0, 0, 0), axis=vec(0, 10, 0), radius=0.01, color=vec(0, 255, 0))
+
+        # # reference axises
+        # self.roll_axis  = cylinder(pos=vec(0, 0, -5), axis=vec(0, 0, 10), radius=0.01, color=vec(255, 255, 255))
+        # self.pitch_axis = cylinder(pos=vec(-5, 0, 0), axis=vec(10, 0, 0), radius=0.01, color=vec(255, 255, 255))
+        # self.yaw_axis   = cylinder(pos=vec(0, -5, 0), axis=vec(0, 10, 0), radius=0.01, color=vec(255, 255, 255))
+
+        # # sub axises, which spin with model
+        # self.roll_guide  = cylinder(pos=vec(0, 0, -5), axis=vec(0, 0, 10), radius=0.01, color=vec(255, 0, 0))
+        # self.pitch_guide = cylinder(pos=vec(-5, 0, 0), axis=vec(10, 0, 0), radius=0.01, color=vec(0, 0, 255))
+        # self.yaw_guide   = cylinder(pos=vec(0, -5, 0), axis=vec(0, 10, 0), radius=0.01, color=vec(0, 255, 0))
     
 
-    def pos (self, x, y, z):                    # input is not delta
-        self.model.pos = vec(x, y, z)
-    
+    def pos (self, pos):                        # input is not delta
+        self.model.pos = pos
+
+        # reference axises
+        # self.roll_axis.pos  = pos + vec(0, 0, -5)
+        # self.pitch_axis.pos = pos + vec(-5, 0, 0)
+        # self.yaw_axis.pos   = pos + vec(0, -5, 0)
+
+        # sub axises, which spin with model
+        self.roll_guide.pos  = pos
+        self.pitch_guide.pos = pos
+        self.yaw_guide.pos   = pos
+
 
     def ang (self, roll, pitch, yaw):           # input is not delta
         # there is only rotate method
