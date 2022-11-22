@@ -173,6 +173,6 @@ if __name__ == '__main__':
     i = 0 
     while True:
         rate(60)
-        mavic.angle(i, -i, i)
+        mavic.ang(i, -i, i)
         i += 1
 

@@ -35,6 +35,14 @@ class Drone:
         self.visible = True
         self.use_double_pid = True
         self.delay = False
+
+
+
+        #test
+        self.use_double_pid = False
+        self.roll.ang_control.K.setK([0.0001, 0, 0])
+        self.pitch.ang_control.K.setK([0.0001, 0, 0])
+        self.thrust_pid = self.PID([0.01, 0, 0])
     
 
     def time_step (self):
@@ -47,13 +55,27 @@ class Drone:
 
         if self.delay:
             sleep(Drone.DELAY)
+        
+        # testing lock
+        #self.pitch.ang = 0
+        #self.pitch.w = 0
+        #self.roll.ang = 0
+        #self.roll.w = 0
+
+        #self.cg_pos = vec(0, 0, 0)
+        #self.v = vec(0, 0, 0)
+        self.cg_pos.x = 0
+        self.cg_pos.z = 0
+
+        self.v.x = 0
+        self.v.z = 0
     
 
     def gravity (self):
         F = vec(0, - self.m * self.g, 0)
         self.translational_motion(F)
 
-        drone_perspective_F = self.rotation_matrix(F, reverse=True)
+        drone_perspective_F = self.rotation_matrix(F)
         split = self.mass_map.m_qdrn[1:] / sum(self.mass_map.m_qdrn)
         splited_F = [s*drone_perspective_F for s in split]
         splited_F_size = list(map(mag, splited_F))
@@ -61,6 +83,11 @@ class Drone:
 
     
     def motor (self):
+        e = 0 - self.pos.y
+        thrust = self.thrust_pid.pid(e)
+        #thrust = 0
+
+
         if self.use_double_pid:
             roll_mv  = self.roll.double_pid_control(self.target_roll)
             pitch_mv = self.pitch.double_pid_control(self.target_pitch)
@@ -70,14 +97,14 @@ class Drone:
             pitch_mv = self.pitch.pid_control(self.target_pitch)
             yaw_mv   = self.yaw.pid_control(self.target_yaw)
 
-        m1 =   roll_mv - pitch_mv + yaw_mv
-        m2 = - roll_mv - pitch_mv - yaw_mv
-        m3 = - roll_mv + pitch_mv + yaw_mv
-        m4 =   roll_mv + pitch_mv - yaw_mv
+        m1 =   roll_mv - pitch_mv + yaw_mv + thrust
+        m2 = - roll_mv - pitch_mv - yaw_mv + thrust
+        m3 = - roll_mv + pitch_mv + yaw_mv + thrust
+        m4 =   roll_mv + pitch_mv - yaw_mv + thrust
 
         motors = [m1, m2, m3, m4]
-        drone_perspective_F = vec(0, 0, sum(motors))
-        F = self.rotation_matrix(drone_perspective_F)
+        drone_perspective_F = vec(0, sum(motors), 0)
+        F = self.rotation_matrix(drone_perspective_F, reverse=True)
         self.translational_motion(F)
         self.rotational_motion(motors)
 
@@ -99,11 +126,13 @@ class Drone:
     
 
     def rotation_matrix (self, F: vec, reverse=False):
-        # vpython coordinate system and rotation matrix coordinate system is different
-        # vpython(x, y, z) = rotation_matrix(z, y, x)
+        # input:  the groud coordinate system
+        # output: the body coordinate system
+        # 지면좌표계로 측정한 힘이, 기울어진 동체좌표계 기준으로 어떻게 측정되는지 변환
+
         r, p, y = self.roll.ang, self.pitch.ang, self.yaw.ang
         if reverse:
-           r, p, y = -r, -p, -y
+            r, p, y = -r, -p, -y
 
         ROLL = np.array([
             1,       0,       0,
@@ -118,22 +147,27 @@ class Drone:
 
         ]).reshape([3, 3])
         YAW = np.array([
-             cos(y), sin(y), 0,
+                cos(y), sin(y), 0,
             -sin(y), cos(y), 0,
             0,            0, 1
 
         ]).reshape([3, 3])
-        F = np.array([F.z, F.y, F.x]).reshape([3, 1])
+
+        # vpython coordinate system and rotation matrix coordinate system is different
+        # rotation_matrix(x, y, z) = vpython(z, x, y)
+        F = np.array([F.z, F.x, F.y]).reshape([3, 1])
 
         rotated_F = ROLL@PITCH@YAW@F
-        return vec(rotated_F[2][0], rotated_F[1][0], rotated_F[0][0])
+        rotated_F = vec(rotated_F[0][0], rotated_F[1][0], rotated_F[2][0])
+        return vec(rotated_F.y, rotated_F.z, rotated_F.x)
 
 
     def rotational_motion(self, F: list):
         # forced: alpha -> w
         Q1, Q2, Q3, Q4 = 0, 1, 2, 3
-        self.roll.w   += ( (F[Q2] + F[Q3]) - (F[Q1] + F[Q4]) ) / self.mass_map.I
-        self.pitch.w  += ( (F[Q1] + F[Q2]) - (F[Q3] + F[Q4]) ) / self.mass_map.I
+        v = ( (F[Q2] + F[Q3]) - (F[Q1] + F[Q4]) ) / self.mass_map.I
+        self.roll.w   += ( (F[Q1] + F[Q4]) - (F[Q2] + F[Q3]) ) / self.mass_map.I
+        self.pitch.w  += ( (F[Q3] + F[Q4]) - (F[Q1] + F[Q2]) ) / self.mass_map.I
 
         # 1 second has passed: w -> theta
         # An object forced in space rotates around the center of gravity.
@@ -176,7 +210,7 @@ class Drone:
             self.e_sum = 0              # for i control
             self.before_e = None        # for d control
 
-            self.K = self.K()
+            self.K = self.K(K)
 
         def pid (self, e):
             K = self.K
@@ -196,8 +230,11 @@ class Drone:
 
 
         class K:
-            def __init__(self, K: list = [0, 0, 0]) -> None:
-                self.setK(K)
+            def __init__(self, K: list = None) -> None:
+                if K is None:
+                    self.setK([0, 0, 0])
+                else:
+                    self.setK(K)
 
             def setK (self, K: list):
                 self.p = K[0]

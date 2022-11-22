@@ -1,49 +1,90 @@
 import pandas as pd
 import numpy as np
 from vpython import *
-#from vpython.no_notebook import stop_server
 
-# roll = radians(45)
-# pitch = radians(0)
-# yaw = radians(0)
-
-# def rotation_matrix (F: vec, reverse=False):
-#         # vpython coordinate system and rotation matrix coordinate system is different
-#         # vpython(x, y, z) = rotation_matrix(z, y, x)
-#         r, p, y = roll, pitch, yaw
-#         if reverse:
-#            r, p, y = -r, -p, -y
-
-#         ROLL = np.array([
-#             1,       0,       0,
-#             0,  cos(r),  sin(r),
-#             0, -sin(r),  cos(r)
-
-#         ]).reshape([3, 3])
-#         PITCH = np.array([
-#             cos(p), 0, -sin(p),
-#             0,      1,       0,
-#             sin(p), 0,  cos(p)
-
-#         ]).reshape([3, 3])
-#         YAW = np.array([
-#              cos(y), sin(y), 0,
-#             -sin(y), cos(y), 0,
-#             0,            0, 1
-
-#         ]).reshape([3, 3])
-#         F = np.array([F.z, F.y, F.x]).reshape([3, 1])
-
-#         rotated_F = ROLL@PITCH@YAW@F
-#         return vec(rotated_F[2][0], rotated_F[1][0], rotated_F[0][0])
-
-# F = vec(2**(1/2), 0, 0)
-# # F = vec(0, 0, 0)
-# # a = np.array([F.x, F.y, F.z]).reshape([3, 1])
-# # print(F.x, F.y, F.z)
-# # print(a)
-# print(rotation_matrix(F))
+#scene.resizable = False
+scene.align = 'left'
+#box()
+scene.width, scene.height = 1050, 800
 
 
-a = box()
-del a
+
+
+
+
+
+box()
+
+def f (s):
+    pass
+
+
+
+def T(s): 
+    print(s.text, s.number)
+def put_text (text):
+    wtext(text=text)
+
+put_text("<b> test codition</b>\n")
+winput( bind=T , type='numeric', text=1)
+
+put_text("  to ")
+
+winput( bind=T )
+
+put_text("   degree")
+
+put_text("\n\n")
+put_text("<b> angle control<b>")
+put_text("\n P gain: \t\t")
+winput( bind=T )
+
+put_text("\n\n")
+put_text("<b> w control<b>")
+put_text("\n P gain: \t\t")
+winput( bind=T )
+
+
+put_text("\n\n I gain: \t\t")
+winput( bind=T )
+put_text("\n\n D gain: \t\t")
+winput( bind=T )
+
+
+def set_aim(r):
+    pass
+
+put_text('\n\n')
+radio(text='pid', checked=False, bind=set_aim)
+
+put_text('\t\t\t\t\t')
+radio(text='double pid', checked=False, bind=set_aim)
+
+
+
+put_text("\t\t\t\t")
+
+
+
+
+
+def B(b):
+    print("The button said this: ", b.text)
+button( bind=B, text='start' )
+
+put_text('\n\n')
+
+
+f1 = graph(align='right', width=600, height=180, title='roll', ymin=-180, ymax=180)
+g1 = gcurve(graph=f1, color=color.red)
+g1.plot(1, 1)
+
+f2 = graph(align='right', width=600, height=180, title='pitch', ymin=-90, ymax=90)
+g2 = gcurve(graph=f2, color=color.red)
+g2.plot(1, 1)
+
+
+f3 = graph(align='right', width=600, height=180, title='yaw', ymin=-180, ymax=180)
+g3 = gcurve(graph=f3, color=color.red)
+g3.plot(1, 1)
+
