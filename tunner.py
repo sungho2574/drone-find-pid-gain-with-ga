@@ -6,7 +6,9 @@ class Tunner:
     def __init__(self) -> None:
         self.gui()
         self.drone = Drone()
-        self.drone.use_double_pid = False
+        self.drone.delay = True
+        self.drone.pos_lock = True
+        #self.drone.use_double_pid = False
 
         self.Kout = self.drone.PID.K([10, 0, 0])
         self.K    = self.drone.PID.K()
@@ -16,21 +18,23 @@ class Tunner:
         t = 0
         while True:
             t += 1
-            #self.drone.time_step()
+            self.drone.time_step()
             self.graph.plot(t, self.drone.roll.ang, self.drone.pitch.ang, self.drone.yaw.ang)
-            print('-----------------------------------------------')
-
-
-            self.drone.pos = vec(0, 0, 0)
-            self.drone.v = vec(0, 0, 0)
-            self.drone.pitch.ang = 0
-            self.drone.pitch.w = 0
+            #print('-----------------------------------------------')
 
 
     def gui (self) -> None:
         scene.align = 'left'
         scene.width, scene.height = 1050, 800
         self.graph = self.Graph()
+
+        self.msg("<b> axis</b>\n")
+        self.radio_roll  = radio(text='roll',  checked=True,  name='roll',  bind=self.choose_axis)
+        self.msg('\t\t\t')
+        self.radio_pitch = radio(text='pitch', checked=False, name='pitch', bind=self.choose_axis)
+        self.msg("\t\t\t")
+        self.radio_yaw   = radio(text='yaw',   checked=False, name='yaw',   bind=self.choose_axis)
+        self.msg("\n\n")
 
         self.msg("<b> test codition</b>\n")
         winput(bind=self.setStartAngle,  type='numeric', text=0)
@@ -77,6 +81,20 @@ class Tunner:
     def setKd (self, s):
         self.K.d= s.number
 
+    def choose_axis (self, r):
+        if r.name == 'roll':
+            self.radio_roll.checked  = True
+            self.radio_pitch.checked = False
+            self.radio_yaw.checked   = False
+        elif r.name == 'pitch':
+            self.radio_roll.checked  = False
+            self.radio_pitch.checked = True
+            self.radio_yaw.checked   = False
+        else:
+            self.radio_roll.checked  = False
+            self.radio_pitch.checked = False
+            self.radio_yaw.checked   = True
+    
     def choose_pid (self, r):
         if r.name == 'pid':
             self.radio_pid.checked        = True
@@ -88,14 +106,23 @@ class Tunner:
             self.drone.use_double_pid = True
     
     def Start (self, b):
-        self.drone.__init__()
         self.graph.clear()
 
-        self.roll.ang = self.start_ang
-        self.drone.setTarget(self.target_ang, self.target_ang, self.target_ang)
-        self.drone.roll.ang_control.K.setK([self.Kout.p, 0, 0])
-        self.drone.roll.w_control.K.setK([self.K.p, self.K.i, self.K.d])
-        
+        if self.radio_roll.checked:
+            self.roll.ang = self.start_ang
+            self.drone.setTarget(radians(self.target_ang), 0, 0)
+            self.drone.roll.ang_control.K.setK([self.Kout.p, 0, 0])
+            self.drone.roll.w_control.K.setK([self.K.p, self.K.i, self.K.d])
+
+        elif self.radio_pitch.checked:
+            self.pitch.ang = self.start_ang
+            self.drone.setTarget(0, radians(self.target_ang), 0)
+            self.drone.pitch.ang_control.K.setK([self.Kout.p, 0, 0])
+            self.drone.pitch.w_control.K.setK([self.K.p, self.K.i, self.K.d])
+
+        else:       # yaw
+            pass
+
 
 
     class Graph:
@@ -113,9 +140,9 @@ class Tunner:
             self.yaw.plot(0, 0)
         
         def plot (self, t, roll, pitch, yaw):
-            self.roll.plot(t, roll)
-            self.pitch.plot(t, pitch)
-            self.yaw.plot(t, yaw)
+            self.roll.plot(t, degrees(roll))
+            self.pitch.plot(t, degrees(pitch))
+            self.yaw.plot(t, degrees(yaw))
         
         def clear (self):
             self.roll.delete()

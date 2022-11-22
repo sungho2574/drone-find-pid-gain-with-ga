@@ -68,9 +68,9 @@ class Model:
     
 
     def rotate (self, obj, delta_roll, delta_pitch, delta_yaw):
-        obj.rotate(angle=radians(delta_roll),  axis=vector(0, 0, 1), origin=self.model.pos)
-        obj.rotate(angle=radians(delta_pitch), axis=vector(1, 0, 0), origin=self.model.pos)
-        obj.rotate(angle=radians(delta_yaw),   axis=vector(0, 1, 0), origin=self.model.pos)
+        obj.rotate(angle=(delta_roll),  axis=vector(0, 0, 1), origin=self.model.pos)
+        obj.rotate(angle=(delta_pitch), axis=vector(1, 0, 0), origin=self.model.pos)
+        obj.rotate(angle=(delta_yaw),   axis=vector(0, 1, 0), origin=self.model.pos)
 
 
     def obj_to_triangles(self, obj):        
@@ -173,6 +173,6 @@ if __name__ == '__main__':
     i = 0 
     while True:
         rate(60)
-        mavic.ang(i, -i, i)
+        mavic.ang(radians(i), -radians(i), radians(i))
         i += 1
 

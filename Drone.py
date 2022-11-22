@@ -32,16 +32,23 @@ class Drone:
        
         self.g = 9.8 * Drone.SPEED
 
+        # options
         self.visible = True
         self.use_double_pid = True
         self.delay = False
 
+        self.roll_lock = False
+        self.pitch_lock = False
+        
+        self.pos_lock = False
+        self.horizon_lock = False
 
+        self.thrust_lock = False
 
-        #test
+        #test_value
         self.use_double_pid = False
-        self.roll.ang_control.K.setK([0.0001, 0, 0])
-        self.pitch.ang_control.K.setK([0.0001, 0, 0])
+        self.roll.ang_control.K.setK([0.001, 0, 0])
+        self.pitch.ang_control.K.setK([0.001, 0, 0])
         self.thrust_pid = self.PID([0.01, 0, 0])
     
 
@@ -56,19 +63,25 @@ class Drone:
         if self.delay:
             sleep(Drone.DELAY)
         
-        # testing lock
-        #self.pitch.ang = 0
-        #self.pitch.w = 0
-        #self.roll.ang = 0
-        #self.roll.w = 0
+        # lock
+        if self.roll_lock:
+            self.roll.ang = 0
+            self.roll.w = 0
+        
+        if self.pitch_lock:
+            self.pitch.ang = 0
+            self.pitch.w = 0
+        
+        if self.pos_lock:
+            self.cg_pos = vec(0, 0, 0)
+            self.v = vec(0, 0, 0)
+        
+        if self.horizon_lock:
+            self.cg_pos.x = 0
+            self.cg_pos.z = 0
 
-        #self.cg_pos = vec(0, 0, 0)
-        #self.v = vec(0, 0, 0)
-        self.cg_pos.x = 0
-        self.cg_pos.z = 0
-
-        self.v.x = 0
-        self.v.z = 0
+            self.v.x = 0
+            self.v.z = 0
     
 
     def gravity (self):
@@ -78,15 +91,17 @@ class Drone:
         drone_perspective_F = self.rotation_matrix(F)
         split = self.mass_map.m_qdrn[1:] / sum(self.mass_map.m_qdrn)
         splited_F = [s*drone_perspective_F for s in split]
-        splited_F_size = list(map(mag, splited_F))
+        splited_F_size = list(map(lambda f: -mag(f), splited_F))
         self.rotational_motion(splited_F_size)
 
     
     def motor (self):
-        e = 0 - self.pos.y
-        thrust = self.thrust_pid.pid(e)
-        #thrust = 0
-
+        if not self.thrust_lock:
+            e = 0 - self.pos.y
+            thrust = self.thrust_pid.pid(e)
+        else:
+            thrust = 0
+        
 
         if self.use_double_pid:
             roll_mv  = self.roll.double_pid_control(self.target_roll)
@@ -109,7 +124,7 @@ class Drone:
         self.rotational_motion(motors)
 
 
-    def setTarget (self, target_roll, target_pitch, target_yaw):
+    def setTarget (self, target_roll, target_pitch, target_yaw):        # radians
         self.target_roll  = target_roll
         self.target_pitch = target_pitch
         self.target_yaw   = target_yaw
@@ -165,7 +180,7 @@ class Drone:
     def rotational_motion(self, F: list):
         # forced: alpha -> w
         Q1, Q2, Q3, Q4 = 0, 1, 2, 3
-        v = ( (F[Q2] + F[Q3]) - (F[Q1] + F[Q4]) ) / self.mass_map.I
+        v = ( (F[Q1] + F[Q4]) - (F[Q2] + F[Q3]) ) / self.mass_map.I
         self.roll.w   += ( (F[Q1] + F[Q4]) - (F[Q2] + F[Q3]) ) / self.mass_map.I
         self.pitch.w  += ( (F[Q3] + F[Q4]) - (F[Q1] + F[Q2]) ) / self.mass_map.I
 
@@ -250,6 +265,8 @@ if __name__ == "__main__":
 
     drone = Drone()
     drone.delay = True
-    
+    drone.pos_lock = True
+
+
     while True:
         drone.time_step()
