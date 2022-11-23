@@ -4,11 +4,12 @@ from pywavefront import Wavefront
 
 
 class Model:
-    def __init__(self, obj_path, visible) -> None:
+    def __init__(self, obj_path, visible=True) -> None:
         if not visible:
             pass
-        # obj_to_triangles에서 처리 시간이 많이 필요함
-        # 어차피 visible=False 처리하고 좌표만 다룰 거면 불러올 이유가 없음
+            # obj_to_triangles에서 처리 시간 많이 필요함
+            # 어차피 visible=False 처리하고 좌표만 다룰 거면 불러올 이유가 없음
+
         self.model = self.obj_to_triangles(Wavefront(obj_path))
         self.model.pos = vec(0, 0, 0)
 

@@ -153,7 +153,7 @@
    <property name="title">
     <string>Lock the axises</string>
    </property>
-   <widget class="QCheckBox" name="roll_lock">
+   <widget class="QCheckBox" name="lock_roll">
     <property name="geometry">
      <rect>
       <x>20</x>
@@ -166,7 +166,7 @@
      <string>roll</string>
     </property>
    </widget>
-   <widget class="QCheckBox" name="pitch_lock">
+   <widget class="QCheckBox" name="lock_pitch">
     <property name="geometry">
      <rect>
       <x>20</x>
@@ -179,7 +179,7 @@
      <string>pitch</string>
     </property>
    </widget>
-   <widget class="QCheckBox" name="yaw_lock">
+   <widget class="QCheckBox" name="lock_yaw">
     <property name="geometry">
      <rect>
       <x>20</x>

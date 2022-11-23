@@ -10,7 +10,7 @@ import numpy as np
 
 #UI파일 연결
 #단, UI파일은 Python 코드 파일과 같은 디렉토리에 위치해야한다.
-form_class = uic.loadUiType("gui.ui")[0]
+form_class = uic.loadUiType("tunner_gui.ui")[0]
 
 #화면을 띄우는데 사용되는 Class 선언
 class WindowClass(QMainWindow, form_class):
@@ -25,9 +25,9 @@ class WindowClass(QMainWindow, form_class):
         self.apply_btn.clicked.connect(self.apply)
         self.radio_pid.clicked.connect(self.setPID)
         self.radio_double_pid.clicked.connect(self.setPID)
-        self.roll_lock.clicked.connect(self.setRollLock)
-        self.pitch_lock.clicked.connect(self.setPitchLock)
-        self.yaw_lock.clicked.connect(self.setYawLock)
+        self.lock_roll.clicked.connect(self.setLockRoll)
+        self.lock_pitch.clicked.connect(self.setLockPitch)
+        self.lock_yaw.clicked.connect(self.setLockYaw)
 
 
     def read_lab_setting (self):
@@ -43,9 +43,9 @@ class WindowClass(QMainWindow, form_class):
         self.setting['condition'] = np.zeros((2, 3))
         self.setting['gain']      = np.zeros((6, 3))
         self.setting['double_pid'] = False
-        self.setting['roll_lock']  = False
-        self.setting['pitch_lock'] = True
-        self.setting['yaw_lock']   = True
+        self.setting['lock_roll']  = False
+        self.setting['lock_pitch'] = True
+        self.setting['lock_yaw']   = True
 
         with open(self.path, 'wb') as f:
             pickle.dump(self.setting, f)
@@ -69,22 +69,22 @@ class WindowClass(QMainWindow, form_class):
         self.radio_double_pid.setChecked(self.setting['double_pid'])
         
         # roll, pitch, yaw lock
-        self.roll_lock.setChecked(self.setting['roll_lock'])
-        self.pitch_lock.setChecked(self.setting['pitch_lock'])
-        self.yaw_lock.setChecked(self.setting['yaw_lock'])
+        self.lock_roll.setChecked(self.setting['lock_roll'])
+        self.lock_pitch.setChecked(self.setting['lock_pitch'])
+        self.lock_yaw.setChecked(self.setting['lock_yaw'])
     
     
     def setPID (self):
         self.setting['double_pid'] = self.radio_double_pid.isChecked()
     
-    def setRollLock (self):
-        self.setting['roll_lock']  = self.roll_lock.isChecked()
+    def setLockRoll (self):
+        self.setting['lock_roll']  = self.lock_roll.isChecked()
 
-    def setPitchLock (self):
-        self.setting['pitch_lock'] = self.pitch_lock.isChecked()
+    def setLockPitch (self):
+        self.setting['lock_pitch'] = self.lock_pitch.isChecked()
     
-    def setYawLock (self):
-        self.setting['yaw_lock']   = self.yaw_lock.isChecked()
+    def setLockYaw (self):
+        self.setting['lock_yaw']   = self.lock_yaw.isChecked()
     
     def apply (self):
         self.save_lab_setting()

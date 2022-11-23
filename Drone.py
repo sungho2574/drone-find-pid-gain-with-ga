@@ -1,6 +1,4 @@
 from vpython import *
-from time import sleep
-
 from model import Model
 from mass import MassMap
 
@@ -9,14 +7,26 @@ import numpy as np
 
 
 class Drone:
-    DELAY = 0.1
-    SPEED = 0.001
+    TIME_STEP = 0.001
 
-    def __init__(self, model_path='model/mavic.obj', dm_path='mass/test.csv', visible=True, graph_visible=True) -> None:
-        self.graph_visible = graph_visible
-        if self.graph_visible:
+    def __init__(self, model_path='model/mavic.obj', dm_path='mass/test.csv', model_visible=True, graph_visible=True) -> None:
+        # options
+        self.MODEL_VISIBLE = model_visible
+        self.USE_DOUBLE_PID = False
+
+        self.LOCK_ROLL = False
+        self.LOCK_PITCH = False
+        
+        self.LOCK_POS = False
+        self.LOCK_HORIZON = False
+        self.LOCK_THRUST = False
+
+        self.GRAPH_VISIBLE = graph_visible
+        if self.GRAPH_VISIBLE:
             self.graph = self.Graph()
-        self.model = Model(model_path, visible=visible)
+        
+        # set bacis property and physical quantity
+        self.model = Model(model_path, visible=model_visible)
         self.mass_map = MassMap(dm_path)
 
         self.m = self.mass_map.M
@@ -32,24 +42,10 @@ class Drone:
         self.target_pitch = 0
         self.target_yaw   = 0
        
-        self.g = 9.8 * Drone.SPEED
-
-        # options
-        self.visible = visible
-        self.visible = True
-        self.use_double_pid = True
-        self.delay = False
-
-        self.roll_lock = False
-        self.pitch_lock = False
-        
-        self.pos_lock = False
-        self.horizon_lock = False
-
-        self.thrust_lock = False
+        self.g = 9.8 * Drone.TIME_STEP
 
         #test_value
-        self.use_double_pid = False
+        self.USE_DOUBLE_PID = False
         self.roll.ang_control.K.setK([0.001, 0, 0])
         self.pitch.ang_control.K.setK([0.001, 0, 0])
         self.thrust_pid = self.PID([0.01, 0, 0])
@@ -58,38 +54,36 @@ class Drone:
     def time_step (self):
         self.gravity()
         self.motor()
+        self.lock()
 
-        if self.graph_visible:
+        if self.GRAPH_VISIBLE:
             self.graph.plot(self.roll.ang, self.pitch.ang, self.yaw.ang)
         
-
-        if self.visible:
+        if self.MODEL_VISIBLE:
             self.model.pos(self.pos)
             self.model.ang(self.roll.ang, self.pitch.ang, self.yaw.ang)
-
-        if self.delay:
-            sleep(Drone.DELAY)
         
-        # lock
-        if self.roll_lock:
+    
+    def lock (self):
+        if self.LOCK_ROLL:
             self.roll.ang = 0
             self.roll.w = 0
         
-        if self.pitch_lock:
+        if self.LOCK_PITCH:
             self.pitch.ang = 0
             self.pitch.w = 0
         
-        if self.pos_lock:
+        if self.LOCK_POS:
             self.cg_pos = vec(0, 0, 0)
             self.v = vec(0, 0, 0)
         
-        if self.horizon_lock:
+        if self.LOCK_HORIZON:
             self.cg_pos.x = 0
             self.cg_pos.z = 0
 
             self.v.x = 0
             self.v.z = 0
-    
+
 
     def gravity (self):
         F = vec(0, - self.m * self.g, 0)
@@ -103,14 +97,13 @@ class Drone:
 
     
     def motor (self):
-        if not self.thrust_lock:
+        if self.LOCK_THRUST:
+            thrust = 0
+        else:
             e = 0 - self.pos.y
             thrust = self.thrust_pid.pid(e)
-        else:
-            thrust = 0
         
-
-        if self.use_double_pid:
+        if self.USE_DOUBLE_PID:
             roll_mv  = self.roll.double_pid_control(self.target_roll)
             pitch_mv = self.pitch.double_pid_control(self.target_pitch)
             yaw_mv   = self.yaw.double_pid_control(self.target_yaw)
@@ -129,12 +122,6 @@ class Drone:
         F = self.rotation_matrix(drone_perspective_F, reverse=True)
         self.translational_motion(F)
         self.rotational_motion(motors)
-
-
-    def setTarget (self, target_roll, target_pitch, target_yaw):        # radians
-        self.target_roll  = target_roll
-        self.target_pitch = target_pitch
-        self.target_yaw   = target_yaw
 
 
     def translational_motion(self, F):
@@ -187,24 +174,80 @@ class Drone:
     def rotational_motion(self, F: list):
         # forced: alpha -> w
         Q1, Q2, Q3, Q4 = 0, 1, 2, 3
-        v = ( (F[Q1] + F[Q4]) - (F[Q2] + F[Q3]) ) / self.mass_map.I
         self.roll.w   += ( (F[Q1] + F[Q4]) - (F[Q2] + F[Q3]) ) / self.mass_map.I
         self.pitch.w  += ( (F[Q3] + F[Q4]) - (F[Q1] + F[Q2]) ) / self.mass_map.I
 
         # 1 second has passed: w -> theta
-        # An object forced in space rotates around the center of gravity.
-        # But I can only control the object by center of object.
-        # So the displacement of the center point shall be corrected.
         self.roll.ang  += self.roll.w
         self.pitch.ang += self.pitch.w
 
+        # An object forced in space rotates around the center of gravity.
+        # But I can only control the object by center of object.
+        # So the displacement of the center point shall be corrected.
         r, p = self.roll.ang, self.pitch.ang
         cg_to_c = self.pos.x - self.cg_pos.x
         self.pos = self.cg_pos + vec(cg_to_c * cos(r), cg_to_c * sin(r), 0)
 
         cg_to_c = self.pos.z - self.cg_pos.z
         self.pos = self.cg_pos + vec(0, cg_to_c * sin(p), cg_to_c * cos(p))
+    
 
+    def clear_graph (self):
+        self.graph.clear()
+
+    def reset_physical_quantity (self):
+        self.cg_pos = self.mass_map.cg_pos
+        self.pos = vec(0, 0, 0)
+        self.v   = vec(0, 0, 0)
+
+        self.roll.ang = 0
+        self.pitch.ang = 0
+        self.yaw.ang = 0
+
+        self.roll.w = 0
+        self.pitch.w = 0
+        self.yaw.w = 0
+
+    def setAng (self, roll, pitch, yaw):                                # radians
+        self.roll.ang = roll
+        self.pitch.ang = pitch
+        self.yaw.ang = yaw
+
+    def setTarget (self, target_roll, target_pitch, target_yaw):        # radians
+        self.target_roll  = target_roll
+        self.target_pitch = target_pitch
+        self.target_yaw   = target_yaw
+    
+    def setK (self, gain_table: list):                                  # shape = (6, 3)
+        gain_table = np.array(gain_table)
+        self.roll.ang_control.K.setK(gain_table[  0,  :3])
+        self.pitch.ang_control.K.setK(gain_table[ 1,  :3])
+        self.yaw.ang_control.K.setK(gain_table[   2,  :3])
+        self.roll.w_control.K.setK(gain_table[    0, 3:6])
+        self.pitch.w_control.K.setK(gain_table[   1, 3:6])
+        self.yaw.w_control.K.setK(gain_table[     2, 3:6])
+    
+    def setDoublePID (self, b):
+        self.USE_DOUBLE_PID = b
+    
+    def setLockRoll (self, b):
+        self.LOCK_ROLL = b
+
+    def setLockPITCH (self, b):
+        self.LOCK_PITCH = b
+
+    def setLockYaw (self, b):
+        self.LOCK_YAW = b
+    
+    def setLockPos (self, b):
+        self.LOCK_POS = b
+
+    def setLockHorizon (self, b):
+        self.LOCK_HORIZON = b
+
+    def setLockThrust (self, b):
+        self.LOCK_THRUST = b
+    
 
 
     class Axis:
@@ -296,15 +339,13 @@ class Drone:
 
 
 
-
 if __name__ == "__main__":
     scene.align = 'left'
     scene.width, scene.height = 1050, 800
 
     drone = Drone()
-    drone.delay = True
-    #drone.pos_lock = True
-
+    drone.setLockPos(True)
 
     while True:
+        sleep(0.1)
         drone.time_step()

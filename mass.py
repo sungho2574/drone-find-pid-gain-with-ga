@@ -152,8 +152,8 @@ class MassMap:
 
 
 if __name__ == "__main__":
-    map_maker = MassMap()
-
     path = 'mass/test.csv'
+    
+    map_maker = MassMap()
     #map_maker.make_mass(path)
     map_maker.render_maas(path=path, guide=True, axis_guide=True)
