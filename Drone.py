@@ -10,6 +10,9 @@ class Drone:
     TIME_STEP = 0.001
 
     def __init__(self, model_path='model/mavic.obj', dm_path='mass/test.csv', model_visible=True, graph_visible=True) -> None:
+        scene.align = 'left'
+        scene.width, scene.height = 1050, 800
+        
         # options
         self.MODEL_VISIBLE = model_visible
         self.USE_DOUBLE_PID = False
@@ -218,7 +221,7 @@ class Drone:
         self.target_pitch = target_pitch
         self.target_yaw   = target_yaw
     
-    def setK (self, gain_table: list):                                  # shape = (6, 3)
+    def setK (self, gain_table: np.array):                                  # shape = (6, 3)
         gain_table = np.array(gain_table)
         self.roll.ang_control.K.setK(gain_table[  0,  :3])
         self.pitch.ang_control.K.setK(gain_table[ 1,  :3])
@@ -340,12 +343,12 @@ class Drone:
 
 
 if __name__ == "__main__":
-    scene.align = 'left'
-    scene.width, scene.height = 1050, 800
-
     drone = Drone()
     drone.setLockPos(True)
+    #drone.setLockPITCH(True)
+    #drone.setLockRoll(True)
 
     while True:
         sleep(0.1)
         drone.time_step()
+        print(drone.yaw.ang, drone.yaw.w, drone.model.yaw, drone.model.delta_yaw)

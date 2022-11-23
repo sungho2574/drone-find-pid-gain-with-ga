@@ -1,20 +1,23 @@
+from vpython import *
 from drone import Drone
 
 import os
+import pickle
 
 
 class Lab:
     def __init__(self) -> None:
         self.drone = Drone()
+        self.drone.setLockPos(True)
 
     def start_test(self):
         while True:
+            sleep(0.1)
             self.drone.time_step()
 
-            if self.event_occured():
-                # 설정을 드론에 적용
-                pass
-    
+            if self.interrupt_occurred():
+                self.fetch_setting()
+
     def interrupt_occurred (self):
         path = './lab/interrupt.txt'
         if os.path.isfile(path):
@@ -22,6 +25,26 @@ class Lab:
             return True
         else:
             return False
+    
+    def fetch_setting (self):
+        path = './lab/lab_setting.pickle'
+        if os.path.isfile(path):
+            with open(path, 'rb') as f:
+                setting = pickle.load(f)
+
+                self.drone.clear_graph()
+                self.drone.reset_physical_quantity()
+
+                start_ang  = setting['condition'][0]
+                target_ang = setting['condition'][1]
+                self.drone.setAng(start_ang[0], start_ang[1], start_ang[2])
+                self.drone.setAng(target_ang[0], target_ang[1], target_ang[2])
+
+                self.drone.setK(setting['gain'])
+                self.drone.setDoublePID(setting['double_pid'])
+                self.drone.setLockRoll(setting['lock_roll'])
+                self.drone.setLockPITCH(setting['lock_pitch'])
+                self.drone.setLockYaw(setting['lock_yaw'])
 
 
 
