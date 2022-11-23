@@ -6,16 +6,16 @@
 # Diagonal Length (except propeller) : 335 mm
 # Weight : 743 g
 
+# random functions
+# np.random.rand(n: shpae)           : [0, 1) 사이의 실수
+# np.random.uniform(low, high, size) : 입력된 범위 사이의 균등분포 실수
+# np.random.normal(mu, sigma, size)  : 입력된 평균과 분산에 따른 정규분포 실수
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
 from vpython import *
-
-# random functions
-# np.random.rand(n: shpae)           : [0, 1) 사이의 실수
-# np.random.uniform(low, high, size) : 입력된 범위 사이의 균등분포 실수
-# np.random.normal(mu, sigma, size)  : 입력된 평균과 분산에 따른 정규분포 실수
 
 
 
@@ -157,5 +157,3 @@ if __name__ == "__main__":
     path = 'mass/test.csv'
     #map_maker.make_mass(path)
     map_maker.render_maas(path=path, guide=True, axis_guide=True)
-
-       

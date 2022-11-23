@@ -1,157 +1,128 @@
-from vpython import *
-from drone import Drone
+import sys
+from PyQt5.QtWidgets import *
+from PyQt5 import uic
+
+from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
+
+import os
+import pickle
+import numpy as np
+
+#UI파일 연결
+#단, UI파일은 Python 코드 파일과 같은 디렉토리에 위치해야한다.
+form_class = uic.loadUiType("gui.ui")[0]
+
+#화면을 띄우는데 사용되는 Class 선언
+class WindowClass(QMainWindow, form_class):
+    def __init__(self) :
+        super().__init__()
+        self.setupUi(self)
+
+        self.path = './lab/lab_setting.pickle'
+        self.read_lab_setting()
+        self.plot_lab_setting()
+
+        self.apply_btn.clicked.connect(self.apply)
+        self.radio_pid.clicked.connect(self.setPID)
+        self.radio_double_pid.clicked.connect(self.setPID)
+        self.roll_lock.clicked.connect(self.setRollLock)
+        self.pitch_lock.clicked.connect(self.setPitchLock)
+        self.yaw_lock.clicked.connect(self.setYawLock)
 
 
-class Tunner:
-    def __init__(self) -> None:
-        self.gui()
-        self.drone = Drone()
-        self.drone.delay = True
-        self.drone.pos_lock = True
-        #self.drone.use_double_pid = False
-
-        self.Kout = self.drone.PID.K([10, 0, 0])
-        self.K    = self.drone.PID.K()
-    
-
-    def simulate (self):
-        t = 0
-        while True:
-            t += 1
-            self.drone.time_step()
-            self.graph.plot(t, self.drone.roll.ang, self.drone.pitch.ang, self.drone.yaw.ang)
-            #print('-----------------------------------------------')
-
-
-    def gui (self) -> None:
-        scene.align = 'left'
-        scene.width, scene.height = 1050, 800
-        self.graph = self.Graph()
-
-        self.msg("<b> axis</b>\n")
-        self.radio_roll  = radio(text='roll',  checked=True,  name='roll',  bind=self.choose_axis)
-        self.msg('\t\t\t')
-        self.radio_pitch = radio(text='pitch', checked=False, name='pitch', bind=self.choose_axis)
-        self.msg("\t\t\t")
-        self.radio_yaw   = radio(text='yaw',   checked=False, name='yaw',   bind=self.choose_axis)
-        self.msg("\n\n")
-
-        self.msg("<b> test codition</b>\n")
-        winput(bind=self.setStartAngle,  type='numeric', text=0)
-        self.msg("  to  ")
-        winput(bind=self.setTargetAngle, type='numeric', text=0)
-        self.msg("   degree")
-        self.msg("\n\n")
-
-        self.msg("<b> angle control<b>")
-        self.msg("\n P gain: \t\t");    winput(bind=self.setKoutp, type='numeric', text=0)
-        self.msg("\n\n")
-
-        self.msg("<b> w control<b>")
-        self.msg("\n P gain: \t\t");    winput(bind=self.setKp, type='numeric', text=0)
-        self.msg("\n\n I gain: \t\t");  winput(bind=self.setKi, type='numeric', text=0)
-        self.msg("\n\n D gain: \t\t");  winput(bind=self.setKd, type='numeric', text=0)
-        self.msg('\n\n')
-
-        self.radio_pid        = radio(text='pid',        checked=True,  name='pid',        bind=self.choose_pid)
-        self.msg('\t\t\t\t')
-        self.radio_double_pid = radio(text='double pid', checked=False, name='double_pid', bind=self.choose_pid)
-        self.msg("\t\t\t\t")
-        button(bind=self.Start, text='start')
-        self.msg('\n\n')
-    
-    def msg (self, text):
-        wtext(text=text)
-
-    def setStartAngle (self, s):
-        self.start_ang = s.number
-    
-    def setTargetAngle (self, s):
-        self.target_ang = s.number
-
-    def setKoutp (self, s):
-        self.Kout.p = s.number
-
-    def setKp (self, s):
-        self.K.p = s.number
-
-    def setKi (self, s):
-        self.K.i = s.number
-
-    def setKd (self, s):
-        self.K.d= s.number
-
-    def choose_axis (self, r):
-        if r.name == 'roll':
-            self.radio_roll.checked  = True
-            self.radio_pitch.checked = False
-            self.radio_yaw.checked   = False
-        elif r.name == 'pitch':
-            self.radio_roll.checked  = False
-            self.radio_pitch.checked = True
-            self.radio_yaw.checked   = False
+    def read_lab_setting (self):
+        if os.path.isfile(self.path):
+            with open(self.path, 'rb') as f:
+                self.setting = pickle.load(f)
         else:
-            self.radio_roll.checked  = False
-            self.radio_pitch.checked = False
-            self.radio_yaw.checked   = True
+            self.init_lab_setting()
     
-    def choose_pid (self, r):
-        if r.name == 'pid':
-            self.radio_pid.checked        = True
-            self.radio_double_pid.checked = False
-            self.drone.use_double_pid = False
-        else:
-            self.radio_pid.checked        = False
-            self.radio_double_pid.checked = True
-            self.drone.use_double_pid = True
+
+    def init_lab_setting (self):
+        self.setting = dict()
+        self.setting['condition'] = np.zeros((2, 3))
+        self.setting['gain']      = np.zeros((6, 3))
+        self.setting['double_pid'] = False
+        self.setting['roll_lock']  = False
+        self.setting['pitch_lock'] = True
+        self.setting['yaw_lock']   = True
+
+        with open(self.path, 'wb') as f:
+            pickle.dump(self.setting, f)
+
+
+    def plot_lab_setting (self):
+        # condition_table
+        for i in range(2):
+            for j in range(3):
+                item = QTableWidgetItem(str(self.setting['condition'][i, j]))
+                self.condition_table.setItem(i, j, item)
+        
+        # gain_table
+        for i in range(6):
+            for j in range(3):
+                item = QTableWidgetItem(str(self.setting['gain'][i, j]))
+                self.gain_table.setItem(i, j, item)
+        
+        # pid or double_pid
+        self.radio_pid.setChecked(not self.setting['double_pid'])
+        self.radio_double_pid.setChecked(self.setting['double_pid'])
+        
+        # roll, pitch, yaw lock
+        self.roll_lock.setChecked(self.setting['roll_lock'])
+        self.pitch_lock.setChecked(self.setting['pitch_lock'])
+        self.yaw_lock.setChecked(self.setting['yaw_lock'])
     
-    def Start (self, b):
-        self.graph.clear()
+    
+    def setPID (self):
+        self.setting['double_pid'] = self.radio_double_pid.isChecked()
+    
+    def setRollLock (self):
+        self.setting['roll_lock']  = self.roll_lock.isChecked()
 
-        if self.radio_roll.checked:
-            self.roll.ang = self.start_ang
-            self.drone.setTarget(radians(self.target_ang), 0, 0)
-            self.drone.roll.ang_control.K.setK([self.Kout.p, 0, 0])
-            self.drone.roll.w_control.K.setK([self.K.p, self.K.i, self.K.d])
-
-        elif self.radio_pitch.checked:
-            self.pitch.ang = self.start_ang
-            self.drone.setTarget(0, radians(self.target_ang), 0)
-            self.drone.pitch.ang_control.K.setK([self.Kout.p, 0, 0])
-            self.drone.pitch.w_control.K.setK([self.K.p, self.K.i, self.K.d])
-
-        else:       # yaw
+    def setPitchLock (self):
+        self.setting['pitch_lock'] = self.pitch_lock.isChecked()
+    
+    def setYawLock (self):
+        self.setting['yaw_lock']   = self.yaw_lock.isChecked()
+    
+    def apply (self):
+        self.save_lab_setting()
+        self.occuer_intterupt()
+    
+    def save_lab_setting (self):
+        self.read_condition_table()
+        self.read_gain_table()
+        
+        with open(self.path, 'wb') as f:
+            pickle.dump(self.setting, f)
+    
+    def read_condition_table (self):
+        for i in range(2):
+            for j in range(3):
+                self.setting['condition'][i, j] = float(self.condition_table.item(i, j).text())
+    
+    def read_gain_table (self):
+        for i in range(6):
+            for j in range(3):
+                self.setting['gain'][i, j] = float(self.gain_table.item(i, j).text())
+    
+    def occuer_intterupt (self):
+        with open('./lab/interrupt.txt', 'w') as f:
+            # just make a file
             pass
+    
+    
 
+if __name__ == "__main__" :
+    #QApplication : 프로그램을 실행시켜주는 클래스
+    app = QApplication(sys.argv) 
 
+    #WindowClass의 인스턴스 생성
+    myWindow = WindowClass() 
 
-    class Graph:
-        def __init__(self) -> None:
-            self.f1 = graph(align='right', width=600, height=180, title='roll')
-            self.roll = gcurve(graph=self.f1, color=color.red)
-            self.roll.plot(0, 0)
+    #프로그램 화면을 보여주는 코드
+    myWindow.show()
 
-            self.f2 = graph(align='right', width=600, height=180, title='pitch')
-            self.pitch = gcurve(graph=self.f2, color=color.red)
-            self.pitch.plot(0, 0)
-
-            self.f3 = graph(align='right', width=600, height=180, title='yaw')
-            self.yaw = gcurve(graph=self.f3, color=color.red)
-            self.yaw.plot(0, 0)
-        
-        def plot (self, t, roll, pitch, yaw):
-            self.roll.plot(t, degrees(roll))
-            self.pitch.plot(t, degrees(pitch))
-            self.yaw.plot(t, degrees(yaw))
-        
-        def clear (self):
-            self.roll.delete()
-            self.pitch.delete()
-            self.yaw.delete()
-
-
-
-
-if __name__ == "__main__":
-    tunner = Tunner()
-    tunner.simulate()
+    #프로그램을 이벤트루프로 진입시키는(프로그램을 작동시키는) 코드
+    app.exec_()

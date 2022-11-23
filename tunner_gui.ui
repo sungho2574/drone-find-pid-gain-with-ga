@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Dialog</class>
+ <widget class="QDialog" name="Dialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>605</width>
+    <height>425</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>PID gain Tunner</string>
+  </property>
+  <widget class="QPushButton" name="apply_btn">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>450</x>
+     <y>370</y>
+     <width>113</width>
+     <height>32</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Apply</string>
+   </property>
+  </widget>
+  <widget class="QGroupBox" name="group_pid">
+   <property name="geometry">
+    <rect>
+     <x>440</x>
+     <y>40</y>
+     <width>141</width>
+     <height>101</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>PID</string>
+   </property>
+   <widget class="QRadioButton" name="radio_pid">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>30</y>
+      <width>100</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>pid</string>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="radio_double_pid">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>70</y>
+      <width>100</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>double pid</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QGroupBox" name="group_pid_gain">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>160</y>
+     <width>401</width>
+     <height>241</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>PID gain</string>
+   </property>
+   <widget class="QTableWidget" name="gain_table">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>30</y>
+      <width>351</width>
+      <height>201</height>
+     </rect>
+    </property>
+    <row>
+     <property name="text">
+      <string>angle:p</string>
+     </property>
+    </row>
+    <row>
+     <property name="text">
+      <string>angle:i</string>
+     </property>
+    </row>
+    <row>
+     <property name="text">
+      <string>angle:d</string>
+     </property>
+    </row>
+    <row>
+     <property name="text">
+      <string>w:p</string>
+     </property>
+    </row>
+    <row>
+     <property name="text">
+      <string>w:i</string>
+     </property>
+    </row>
+    <row>
+     <property name="text">
+      <string>w:d</string>
+     </property>
+    </row>
+    <column>
+     <property name="text">
+      <string>roll</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>pitch</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>yaw</string>
+     </property>
+    </column>
+    <item row="0" column="0">
+     <property name="text">
+      <string/>
+     </property>
+    </item>
+   </widget>
+  </widget>
+  <widget class="QGroupBox" name="group_lock_axises">
+   <property name="geometry">
+    <rect>
+     <x>440</x>
+     <y>180</y>
+     <width>141</width>
+     <height>161</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>Lock the axises</string>
+   </property>
+   <widget class="QCheckBox" name="roll_lock">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>40</y>
+      <width>87</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>roll</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="pitch_lock">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>80</y>
+      <width>87</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>pitch</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="yaw_lock">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>120</y>
+      <width>87</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>yaw</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QGroupBox" name="group_experiment_codition">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>20</y>
+     <width>401</width>
+     <height>121</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>Experiment condition</string>
+   </property>
+   <widget class="QTableWidget" name="condition_table">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>30</y>
+      <width>381</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <row>
+     <property name="text">
+      <string>start angle</string>
+     </property>
+    </row>
+    <row>
+     <property name="text">
+      <string>target angle</string>
+     </property>
+    </row>
+    <column>
+     <property name="text">
+      <string>roll</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>pitch</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>yaw</string>
+     </property>
+    </column>
+   </widget>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

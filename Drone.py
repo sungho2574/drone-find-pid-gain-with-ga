@@ -8,13 +8,15 @@ import numpy as np
 
 
 
-
 class Drone:
     DELAY = 0.1
     SPEED = 0.001
 
-    def __init__(self, model_path='model/mavic.obj', dm_path='mass/test.csv') -> None:
-        self.model = Model(model_path)
+    def __init__(self, model_path='model/mavic.obj', dm_path='mass/test.csv', visible=True, graph_visible=True) -> None:
+        self.graph_visible = graph_visible
+        if self.graph_visible:
+            self.graph = self.Graph()
+        self.model = Model(model_path, visible=visible)
         self.mass_map = MassMap(dm_path)
 
         self.m = self.mass_map.M
@@ -33,6 +35,7 @@ class Drone:
         self.g = 9.8 * Drone.SPEED
 
         # options
+        self.visible = visible
         self.visible = True
         self.use_double_pid = True
         self.delay = False
@@ -55,6 +58,10 @@ class Drone:
     def time_step (self):
         self.gravity()
         self.motor()
+
+        if self.graph_visible:
+            self.graph.plot(self.roll.ang, self.pitch.ang, self.yaw.ang)
+        
 
         if self.visible:
             self.model.pos(self.pos)
@@ -255,17 +262,48 @@ class Drone:
                 self.p = K[0]
                 self.i = K[1]
                 self.d = K[2]
+    
+
+
+    class Graph:
+        def __init__(self) -> None:
+            self.f1 = graph(align='right', width=600, height=180, title='roll')
+            self.roll = gcurve(graph=self.f1, color=color.red)
+            self.roll.plot(0, 0)
+
+            self.f2 = graph(align='right', width=600, height=180, title='pitch')
+            self.pitch = gcurve(graph=self.f2, color=color.red)
+            self.pitch.plot(0, 0)
+
+            self.f3 = graph(align='right', width=600, height=180, title='yaw')
+            self.yaw = gcurve(graph=self.f3, color=color.red)
+            self.yaw.plot(0, 0)
+
+            self.t = 0
+        
+        def plot (self, roll, pitch, yaw):
+            self.t += 1
+            self.roll.plot(self.t, degrees(roll))
+            self.pitch.plot(self.t, degrees(pitch))
+            self.yaw.plot(self.t, degrees(yaw))
+        
+        def clear (self):
+            self.roll.delete()
+            self.pitch.delete()
+            self.yaw.delete()
+            self.t = 0
 
 
 
 
 
 if __name__ == "__main__":
-    scene.width, scene.height = 800, 600
+    scene.align = 'left'
+    scene.width, scene.height = 1050, 800
 
     drone = Drone()
     drone.delay = True
-    drone.pos_lock = True
+    #drone.pos_lock = True
 
 
     while True:
