@@ -38,7 +38,7 @@ class Lab:
                 start_ang  = setting['condition'][0]
                 target_ang = setting['condition'][1]
                 self.drone.setAng(start_ang[0], start_ang[1], start_ang[2])
-                self.drone.setAng(target_ang[0], target_ang[1], target_ang[2])
+                self.drone.setTarget(target_ang[0], target_ang[1], target_ang[2])
 
                 self.drone.setK(setting['gain'])
                 self.drone.setDoublePID(setting['double_pid'])

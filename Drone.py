@@ -49,8 +49,8 @@ class Drone:
 
         #test_value
         self.USE_DOUBLE_PID = False
-        self.roll.ang_control.K.setK([0.001, 0, 0])
-        self.pitch.ang_control.K.setK([0.001, 0, 0])
+        self.roll.ang_control.K.setK([0.0001, 0, 0])
+        self.pitch.ang_control.K.setK([0.0001, 0, 0])
         self.thrust_pid = self.PID([0.01, 0, 0])
     
 
@@ -77,6 +77,7 @@ class Drone:
             self.pitch.w = 0
         
         if self.LOCK_POS:
+            self.pos = vec(0, 0, 0)
             self.cg_pos = vec(0, 0, 0)
             self.v = vec(0, 0, 0)
         
@@ -187,12 +188,12 @@ class Drone:
         # An object forced in space rotates around the center of gravity.
         # But I can only control the object by center of object.
         # So the displacement of the center point shall be corrected.
-        r, p = self.roll.ang, self.pitch.ang
-        cg_to_c = self.pos.x - self.cg_pos.x
-        self.pos = self.cg_pos + vec(cg_to_c * cos(r), cg_to_c * sin(r), 0)
+        # r, p = self.roll.ang, self.pitch.ang
+        # cg_to_c = self.pos.x - self.cg_pos.x
+        # self.pos = self.cg_pos + vec(cg_to_c * cos(r), cg_to_c * sin(r), 0)
 
-        cg_to_c = self.pos.z - self.cg_pos.z
-        self.pos = self.cg_pos + vec(0, cg_to_c * sin(p), cg_to_c * cos(p))
+        # cg_to_c = self.pos.z - self.cg_pos.z
+        # self.pos = self.cg_pos + vec(0, cg_to_c * sin(p), cg_to_c * cos(p))
     
 
     def clear_graph (self):
@@ -211,24 +212,24 @@ class Drone:
         self.pitch.w = 0
         self.yaw.w = 0
 
-    def setAng (self, roll, pitch, yaw):                                # radians
-        self.roll.ang = roll
-        self.pitch.ang = pitch
-        self.yaw.ang = yaw
+    def setAng (self, roll, pitch, yaw):
+        self.roll.ang = radians(roll)
+        self.pitch.ang = radians(pitch)
+        self.yaw.ang = radians(yaw)
 
-    def setTarget (self, target_roll, target_pitch, target_yaw):        # radians
-        self.target_roll  = target_roll
-        self.target_pitch = target_pitch
-        self.target_yaw   = target_yaw
+    def setTarget (self, target_roll, target_pitch, target_yaw):
+        self.target_roll  = radians(target_roll)
+        self.target_pitch = radians(target_pitch)
+        self.target_yaw   = radians(target_yaw)
     
     def setK (self, gain_table: np.array):                                  # shape = (6, 3)
         gain_table = np.array(gain_table)
-        self.roll.ang_control.K.setK(gain_table[  0,  :3])
-        self.pitch.ang_control.K.setK(gain_table[ 1,  :3])
-        self.yaw.ang_control.K.setK(gain_table[   2,  :3])
-        self.roll.w_control.K.setK(gain_table[    0, 3:6])
-        self.pitch.w_control.K.setK(gain_table[   1, 3:6])
-        self.yaw.w_control.K.setK(gain_table[     2, 3:6])
+        self.roll.ang_control.K.setK(gain_table[  :3, 0])
+        self.pitch.ang_control.K.setK(gain_table[ :3, 1])
+        self.yaw.ang_control.K.setK(gain_table[   :3, 2])
+        self.roll.w_control.K.setK(gain_table[   3:6, 0])
+        self.pitch.w_control.K.setK(gain_table[  3:6, 1])
+        self.yaw.w_control.K.setK(gain_table[    3:6, 2])
     
     def setDoublePID (self, b):
         self.USE_DOUBLE_PID = b
@@ -351,4 +352,6 @@ if __name__ == "__main__":
     while True:
         sleep(0.1)
         drone.time_step()
-        print(drone.yaw.ang, drone.yaw.w, drone.model.yaw, drone.model.delta_yaw)
+        # print(drone.yaw.ang, drone.yaw.w, drone.model.yaw, drone.model.delta_yaw)
+        #print(drone.roll.ang, drone.roll.w, drone.model.roll, drone.model.delta_roll)
+        print(drone.pitch.ang, drone.pitch.w, drone.model.pitch, drone.model.delta_pitch)
