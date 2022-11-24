@@ -20,12 +20,12 @@ class WindowClass(QMainWindow, form_class):
         self.read_lab_setting()
         self.plot_lab_setting()
 
-        self.apply_btn.clicked.connect(self.apply)
+        self.btn_apply.clicked.connect(self.apply)
         self.radio_pid.clicked.connect(self.setPID)
         self.radio_double_pid.clicked.connect(self.setPID)
-        self.lock_roll.clicked.connect(self.setLockRoll)
-        self.lock_pitch.clicked.connect(self.setLockPitch)
-        self.lock_yaw.clicked.connect(self.setLockYaw)
+        self.chk_roll.clicked.connect(self.setRoll)
+        self.chk_pitch.clicked.connect(self.setPitch)
+        self.chk_yaw.clicked.connect(self.setYaw)
 
 
     def read_lab_setting (self):
@@ -41,9 +41,9 @@ class WindowClass(QMainWindow, form_class):
         self.setting['condition'] = np.zeros((2, 3))
         self.setting['gain']      = np.zeros((6, 3))
         self.setting['double_pid'] = False
-        self.setting['lock_roll']  = False
-        self.setting['lock_pitch'] = True
-        self.setting['lock_yaw']   = True
+        self.setting['chk_roll']  = True
+        self.setting['chk_pitch'] = True
+        self.setting['chk_yaw']   = False
 
         with open(self.path, 'wb') as f:
             pickle.dump(self.setting, f)
@@ -66,23 +66,23 @@ class WindowClass(QMainWindow, form_class):
         self.radio_pid.setChecked(not self.setting['double_pid'])
         self.radio_double_pid.setChecked(self.setting['double_pid'])
         
-        # roll, pitch, yaw lock
-        self.lock_roll.setChecked(self.setting['lock_roll'])
-        self.lock_pitch.setChecked(self.setting['lock_pitch'])
-        self.lock_yaw.setChecked(self.setting['lock_yaw'])
+        # roll, pitch, yaw Chk
+        self.chk_roll.setChecked(self.setting['chk_roll'])
+        self.chk_pitch.setChecked(self.setting['chk_pitch'])
+        self.chk_yaw.setChecked(self.setting['chk_yaw'])
     
     
     def setPID (self):
         self.setting['double_pid'] = self.radio_double_pid.isChecked()
     
-    def setLockRoll (self):
-        self.setting['lock_roll']  = self.lock_roll.isChecked()
+    def setRoll (self):
+        self.setting['chk_roll']  = self.chk_roll.isChecked()
 
-    def setLockPitch (self):
-        self.setting['lock_pitch'] = self.lock_pitch.isChecked()
+    def setPitch (self):
+        self.setting['chk_pitch'] = self.chk_pitch.isChecked()
     
-    def setLockYaw (self):
-        self.setting['lock_yaw']   = self.lock_yaw.isChecked()
+    def setYaw (self):
+        self.setting['chk_yaw']   = self.chk_yaw.isChecked()
     
     def apply (self):
         self.save_lab_setting()

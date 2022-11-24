@@ -48,7 +48,6 @@ class Drone:
         self.g = 9.8 * Drone.TIME_STEP
 
         #test_value
-        self.USE_DOUBLE_PID = False
         self.roll.ang_control.K.setK([0.0001, 0, 0])
         self.pitch.ang_control.K.setK([0.0001, 0, 0])
         self.thrust_pid = self.PID([0.01, 0, 0])
@@ -77,7 +76,6 @@ class Drone:
             self.pitch.w = 0
         
         if self.LOCK_POS:
-            self.pos = vec(0, 0, 0)
             self.cg_pos = vec(0, 0, 0)
             self.v = vec(0, 0, 0)
         
@@ -188,12 +186,12 @@ class Drone:
         # An object forced in space rotates around the center of gravity.
         # But I can only control the object by center of object.
         # So the displacement of the center point shall be corrected.
-        # r, p = self.roll.ang, self.pitch.ang
-        # cg_to_c = self.pos.x - self.cg_pos.x
-        # self.pos = self.cg_pos + vec(cg_to_c * cos(r), cg_to_c * sin(r), 0)
+        r, p = self.roll.ang, self.pitch.ang
+        cg_to_c = self.pos.x - self.cg_pos.x
+        self.pos = self.cg_pos + vec(cg_to_c * cos(r), cg_to_c * sin(r), 0)
 
-        # cg_to_c = self.pos.z - self.cg_pos.z
-        # self.pos = self.cg_pos + vec(0, cg_to_c * sin(p), cg_to_c * cos(p))
+        cg_to_c = self.pos.z - self.cg_pos.z
+        self.pos = self.cg_pos + vec(0, cg_to_c * sin(p), cg_to_c * cos(p))
     
 
     def clear_graph (self):
@@ -352,6 +350,3 @@ if __name__ == "__main__":
     while True:
         sleep(0.1)
         drone.time_step()
-        # print(drone.yaw.ang, drone.yaw.w, drone.model.yaw, drone.model.delta_yaw)
-        #print(drone.roll.ang, drone.roll.w, drone.model.roll, drone.model.delta_roll)
-        print(drone.pitch.ang, drone.pitch.w, drone.model.pitch, drone.model.delta_pitch)

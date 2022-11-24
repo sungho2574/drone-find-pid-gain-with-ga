@@ -42,9 +42,9 @@ class Lab:
 
                 self.drone.setK(setting['gain'])
                 self.drone.setDoublePID(setting['double_pid'])
-                self.drone.setLockRoll(setting['lock_roll'])
-                self.drone.setLockPITCH(setting['lock_pitch'])
-                self.drone.setLockYaw(setting['lock_yaw'])
+                self.drone.setLockRoll(not setting['lock_roll'])
+                self.drone.setLockPITCH(not setting['lock_pitch'])
+                self.drone.setLockYaw(not setting['lock_yaw'])
 
 
 

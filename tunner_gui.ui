@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>PID gain Tunner</string>
   </property>
-  <widget class="QPushButton" name="apply_btn">
+  <widget class="QPushButton" name="btn_apply">
    <property name="enabled">
     <bool>true</bool>
    </property>
@@ -141,7 +141,7 @@
     </item>
    </widget>
   </widget>
-  <widget class="QGroupBox" name="group_lock_axises">
+  <widget class="QGroupBox" name="group_choose_axises">
    <property name="geometry">
     <rect>
      <x>440</x>
@@ -151,9 +151,9 @@
     </rect>
    </property>
    <property name="title">
-    <string>Lock the axises</string>
+    <string>Choose the axises</string>
    </property>
-   <widget class="QCheckBox" name="lock_roll">
+   <widget class="QCheckBox" name="chk_roll">
     <property name="geometry">
      <rect>
       <x>20</x>
@@ -166,7 +166,7 @@
      <string>roll</string>
     </property>
    </widget>
-   <widget class="QCheckBox" name="lock_pitch">
+   <widget class="QCheckBox" name="chk_pitch">
     <property name="geometry">
      <rect>
       <x>20</x>
@@ -179,7 +179,7 @@
      <string>pitch</string>
     </property>
    </widget>
-   <widget class="QCheckBox" name="lock_yaw">
+   <widget class="QCheckBox" name="chk_yaw">
     <property name="geometry">
      <rect>
       <x>20</x>
