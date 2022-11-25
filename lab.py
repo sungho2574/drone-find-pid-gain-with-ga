@@ -9,6 +9,7 @@ class Lab:
     def __init__(self) -> None:
         self.drone = Drone()
         self.drone.setLockPos(True)
+        self.fetch_setting()
 
     def start_test(self):
         while True:

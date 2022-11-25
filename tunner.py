@@ -16,7 +16,8 @@ class WindowClass(QMainWindow, form_class):
         super().__init__()
         self.setupUi(self)
 
-        self.path = './lab/lab_setting.pickle'
+        self.path_dir = './lab'
+        self.path = self.path_dir + '/lab_setting.pickle'
         self.read_lab_setting()
         self.plot_lab_setting()
 
@@ -29,6 +30,9 @@ class WindowClass(QMainWindow, form_class):
 
 
     def read_lab_setting (self):
+        if not os.path.isdir(self.path_dir):
+            os.mkdir(self.path_dir)
+
         if os.path.isfile(self.path):
             with open(self.path, 'rb') as f:
                 self.setting = pickle.load(f)
