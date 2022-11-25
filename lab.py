@@ -46,6 +46,10 @@ class Lab:
                 self.drone.setLockRoll(not setting['chk_roll'])
                 self.drone.setLockPITCH(not setting['chk_pitch'])
                 self.drone.setLockYaw(not setting['chk_yaw'])
+        else:
+            print("'./lab/lab_setting.pickle' doesn't exist.")
+            print("Please open 'tunner.py' first to initialize lab setting")
+            exit()
 
 
 
