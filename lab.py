@@ -5,6 +5,7 @@ import os
 import pickle
 
 
+
 class Lab:
     def __init__(self) -> None:
         self.drone = Drone()
