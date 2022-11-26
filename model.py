@@ -37,8 +37,8 @@ class Model:
         v = cross(s, k)
         vrot = v*cos(pitch) + cross(k, v)*sin(pitch)
     
-        self.model.axis=k
-        self.model.up=vrot
+        self.model.axis = k
+        self.model.up = vrot
 
 
     def obj_to_triangles(self, obj):        
