@@ -57,13 +57,7 @@ class Drone:
         self.gravity()
         self.motor()
         self.lock()
-
-        if self.GRAPH_VISIBLE:
-            self.graph.plot(self.roll.ang, self.pitch.ang, self.yaw.ang)
-        
-        if self.MODEL_VISIBLE:
-            self.model.pos(self.pos)
-            self.model.ang(self.roll.ang, self.pitch.ang, self.yaw.ang)
+        self.draw()
         
     
     def lock (self):
@@ -85,6 +79,15 @@ class Drone:
 
             self.v.x = 0
             self.v.z = 0
+
+
+    def draw (self):
+        if self.GRAPH_VISIBLE:
+            self.graph.plot(self.roll.ang, self.pitch.ang, self.yaw.ang)
+        
+        if self.MODEL_VISIBLE:
+            self.model.pos(self.pos)
+            self.model.ang(self.roll.ang, self.pitch.ang, self.yaw.ang)
 
 
     def gravity (self):
