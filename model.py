@@ -25,7 +25,7 @@ class Model:
         self.y_axis = cylinder(pos=vec(0, -5, 0), axis=vec(0, 10, 0), radius=0.01, color=vec(255, 255, 255))
 
 
-    def pos (self, pos):                        # input is not delta
+    def pos (self, pos: vec):                   # input is not delta
         self.model.pos = pos
         
 
