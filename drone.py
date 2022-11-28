@@ -315,15 +315,15 @@ class Drone:
 
     class Graph:
         def __init__(self) -> None:
-            self.f1 = graph(align='right', width=600, height=180, title='roll')
+            self.f1 = graph(align='right', width=600, height=180, title='roll', ymin=-100, ymax=100)
             self.roll = gcurve(graph=self.f1, color=color.red)
             self.roll.plot(0, 0)
 
-            self.f2 = graph(align='right', width=600, height=180, title='pitch')
+            self.f2 = graph(align='right', width=600, height=180, title='pitch', ymin=-100, ymax=100)
             self.pitch = gcurve(graph=self.f2, color=color.red)
             self.pitch.plot(0, 0)
 
-            self.f3 = graph(align='right', width=600, height=180, title='yaw')
+            self.f3 = graph(align='right', width=600, height=180, title='yaw', ymin=-100, ymax=100)
             self.yaw = gcurve(graph=self.f3, color=color.red)
             self.yaw.plot(0, 0)
 
