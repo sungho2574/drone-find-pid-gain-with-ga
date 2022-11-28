@@ -50,9 +50,9 @@ class Drone:
         #test_value
         self.USE_DOUBLE_PID = True
         self.roll.ang_controller.K.setK([0.0001, 0, 0])
-        self.roll.w_controller.K.setK([0.003, 0, 0])
         self.pitch.ang_controller.K.setK([0.0001, 0, 0])
-        self.pitch.w_controller.K.setK([0.003, 0, 0])
+        # self.roll.w_controller.K.setK([0.003, 0, 0])
+        # self.pitch.w_controller.K.setK([0.003, 0, 0])
         self.thrust_pid = self.PID([0.01, 0, 0])
     
 
