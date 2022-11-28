@@ -48,8 +48,11 @@ class Drone:
         self.g = 9.8 * Drone.TIME_STEP
 
         #test_value
-        self.roll.ang_control.K.setK([0.0001, 0, 0])
-        self.pitch.ang_control.K.setK([0.0001, 0, 0])
+        self.USE_DOUBLE_PID = True
+        self.roll.ang_controller.K.setK([0.0001, 0, 0])
+        self.roll.w_controller.K.setK([0.003, 0, 0])
+        self.pitch.ang_controller.K.setK([0.0001, 0, 0])
+        self.pitch.w_controller.K.setK([0.003, 0, 0])
         self.thrust_pid = self.PID([0.01, 0, 0])
     
 
@@ -225,12 +228,12 @@ class Drone:
     
     def setK (self, gain_table: np.array):                                  # shape = (6, 3)
         gain_table = np.array(gain_table)
-        self.roll.ang_control.K.setK(gain_table[  :3, 0])
-        self.pitch.ang_control.K.setK(gain_table[ :3, 1])
-        self.yaw.ang_control.K.setK(gain_table[   :3, 2])
-        self.roll.w_control.K.setK(gain_table[   3:6, 0])
-        self.pitch.w_control.K.setK(gain_table[  3:6, 1])
-        self.yaw.w_control.K.setK(gain_table[    3:6, 2])
+        self.roll.ang_controller.K.setK(gain_table[  :3, 0])
+        self.pitch.ang_controller.K.setK(gain_table[ :3, 1])
+        self.yaw.ang_controller.K.setK(gain_table[   :3, 2])
+        self.roll.w_controller.K.setK(gain_table[   3:6, 0])
+        self.pitch.w_controller.K.setK(gain_table[  3:6, 1])
+        self.yaw.w_controller.K.setK(gain_table[    3:6, 2])
     
     def setDoublePID (self, b):
         self.USE_DOUBLE_PID = b
@@ -260,18 +263,18 @@ class Drone:
             self.ang = 0
             self.w = 0
 
-            self.ang_control = Drone.PID(K_out)
-            self.w_control   = Drone.PID(K_in)
+            self.ang_controller = Drone.PID(K_out)
+            self.w_controller   = Drone.PID(K_in)
 
         def pid_control (self, target_ang):
             e = target_ang - self.ang
-            return self.ang_control.pid(e)
+            return self.ang_controller.pid(e)
         
         def double_pid_control (self, target_ang):
             target_w =  self.pid_control(target_ang)
 
             e = target_w - self.w
-            return self.w_control.pid(e)
+            return self.w_controller.pid(e)
 
 
 
