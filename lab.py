@@ -36,6 +36,7 @@ class Lab:
 
                 self.drone.clear_graph()
                 self.drone.reset_physical_quantity()
+                self.drone.reset_pid()
 
                 start_ang  = setting['condition'][0]
                 target_ang = setting['condition'][1]
