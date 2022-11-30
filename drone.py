@@ -164,7 +164,7 @@ class Drone:
 
         ]).reshape([3, 3])
         YAW = np.array([
-                cos(y), sin(y), 0,
+            cos(y), sin(y), 0,
             -sin(y), cos(y), 0,
             0,            0, 1
 
@@ -215,6 +215,14 @@ class Drone:
         self.roll.w = 0
         self.pitch.w = 0
         self.yaw.w = 0
+    
+    def reset_pid (self):
+        self.roll.ang_controller.init_e()
+        self.roll.w_controller.init_e()
+        self.pitch.ang_controller.init_e()
+        self.pitch.w_controller.init_e()
+        self.yaw.ang_controller.init_e()
+        self.yaw.w_controller.init_e()
 
     def setAng (self, roll, pitch, yaw):
         self.roll.ang = radians(roll)
@@ -280,9 +288,7 @@ class Drone:
 
     class PID:
         def __init__(self, K=None) -> None:
-            self.e_sum = 0              # for i control
-            self.before_e = None        # for d control
-
+            self.init_e()
             self.K = self.K(K)
 
         def pid (self, e):
@@ -300,6 +306,11 @@ class Drone:
                 diff = e - self.before_e
                 self.before_e = e
                 return diff
+        
+        def init_e (self):
+            self.e_sum = 0              # for i control
+            self.before_e = None        # for d control
+
 
 
         class K:
