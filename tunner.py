@@ -4,13 +4,20 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
 
 import os
 import pickle
+import platform
 import numpy as np
 
 
 
 #UI파일 연결
 #단, UI파일은 Python 코드 파일과 같은 디렉토리에 위치해야한다.
-form_class = uic.loadUiType("tunner_gui.ui")[0]
+
+if platform.system() == 'Darwin':
+    ui_name = 'tunner_gui_mac.ui'
+else:
+    ui_name = 'tunnwe_gui_windows.ui'
+
+form_class = uic.loadUiType(ui_name)[0]
 
 #화면을 띄우는데 사용되는 Class 선언
 class WindowClass(QMainWindow, form_class):
