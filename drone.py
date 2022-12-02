@@ -115,10 +115,12 @@ class Drone:
             roll_mv  = self.roll.double_pid_control(self.target_roll)
             pitch_mv = self.pitch.double_pid_control(self.target_pitch)
             yaw_mv   = self.yaw.double_pid_control(self.target_yaw)
+            self.graph.plot_raw(roll_mv, pitch_mv, yaw_mv)
         else:
             roll_mv  = self.roll.pid_control(self.target_roll)
             pitch_mv = self.pitch.pid_control(self.target_pitch)
             yaw_mv   = self.yaw.pid_control(self.target_yaw)
+            self.graph.plot_raw(roll_mv, pitch_mv, yaw_mv)
 
         m1 =   roll_mv - pitch_mv + yaw_mv + thrust
         m2 = - roll_mv - pitch_mv - yaw_mv + thrust
@@ -342,6 +344,18 @@ class Drone:
             self.yaw = gcurve(graph=self.f3, color=color.red)
             self.yaw.plot(0, 0)
 
+            self.f4 = graph(align='right', width=600, height=180, title='roll_mv')
+            self.roll_mv = gcurve(graph=self.f4, color=color.red)
+            self.roll_mv.plot(0, 0)
+
+            self.f5 = graph(align='right', width=600, height=180, title='pitch_mv')
+            self.pitch_mv = gcurve(graph=self.f5, color=color.red)
+            self.pitch_mv.plot(0, 0)
+
+            self.f6 = graph(align='right', width=600, height=180, title='yaw_mv')
+            self.yaw_mv = gcurve(graph=self.f6, color=color.red)
+            self.yaw_mv.plot(0, 0)
+
             self.t = 0
         
         def plot (self, roll, pitch, yaw):
@@ -350,10 +364,20 @@ class Drone:
             self.pitch.plot(self.t, degrees(pitch))
             self.yaw.plot(self.t, degrees(yaw))
         
+        def plot_raw (self, roll_mv, pitch_mv, yaw_mv):
+            self.roll_mv.plot(self.t, degrees(roll_mv))
+            self.pitch_mv.plot(self.t, degrees(pitch_mv))
+            self.yaw_mv.plot(self.t, degrees(yaw_mv))
+
         def clear (self):
             self.roll.delete()
             self.pitch.delete()
             self.yaw.delete()
+            
+            self.roll_mv.delete()
+            self.pitch_mv.delete()
+            self.yaw_mv.delete()
+
             self.t = 0
 
 
