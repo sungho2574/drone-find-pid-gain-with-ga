@@ -225,9 +225,9 @@ class Drone:
         self.yaw.w_controller.init_e()
 
     def setAng (self, roll, pitch, yaw):
-        self.roll.ang = radians(roll)
+        self.roll.ang  = radians(roll)
         self.pitch.ang = radians(pitch)
-        self.yaw.ang = radians(yaw)
+        self.yaw.ang   = radians(yaw)
 
     def setTarget (self, target_roll, target_pitch, target_yaw):
         self.target_roll  = radians(target_roll)
@@ -301,6 +301,7 @@ class Drone:
 
         def diff (self, e):
             if self.before_e is None:       # first time, it should be ignored
+                self.before_e = e
                 return 0
             else:
                 diff = e - self.before_e
