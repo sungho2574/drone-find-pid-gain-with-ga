@@ -7,8 +7,8 @@ import pickle
 
 
 class Lab:
-    def __init__(self) -> None:
-        self.drone = Drone()
+    def __init__(self, graph_limit=True) -> None:
+        self.drone = Drone(graph_limit=graph_limit)
         self.drone.setLockPos(True)
         self.fetch_setting()
 
@@ -36,7 +36,7 @@ class Lab:
 
                 self.drone.clear_graph()
                 self.drone.reset_physical_quantity()
-                self.drone.reset_pid()
+                self.drone.init_pid()
 
                 start_ang  = setting['condition'][0]
                 target_ang = setting['condition'][1]
@@ -56,5 +56,5 @@ class Lab:
 
 
 if __name__ == '__main__':
-    lab = Lab()
+    lab = Lab(graph_limit=False)
     lab.start_test()

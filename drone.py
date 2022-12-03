@@ -9,7 +9,7 @@ import numpy as np
 class Drone:
     TIME_STEP = 0.001
 
-    def __init__(self, model_path='model/mavic.obj', dm_path='mass/test.csv', model_visible=True, graph_visible=True) -> None:
+    def __init__(self, model_path='model/mavic.obj', dm_path='mass/test.csv', model_visible=True, graph_visible=True, graph_limit=True) -> None:
         scene.align = 'left'
         scene.width, scene.height = 1050, 800
         
@@ -26,7 +26,7 @@ class Drone:
 
         self.GRAPH_VISIBLE = graph_visible
         if self.GRAPH_VISIBLE:
-            self.graph = self.Graph()
+            self.graph = self.Graph(graph_limit=graph_limit)
         
         # set bacis property and physical quantity
         self.model = Model(model_path, visible=model_visible)
@@ -65,12 +65,10 @@ class Drone:
     
     def lock (self):
         if self.LOCK_ROLL:
-            self.roll.ang = 0
-            self.roll.w = 0
+            self.roll.reset()
         
         if self.LOCK_PITCH:
-            self.pitch.ang = 0
-            self.pitch.w = 0
+            self.pitch.reset()
         
         if self.LOCK_POS:
             self.cg_pos = vec(0, 0, 0)
@@ -210,21 +208,14 @@ class Drone:
         self.pos = vec(0, 0, 0)
         self.v   = vec(0, 0, 0)
 
-        self.roll.ang = 0
-        self.pitch.ang = 0
-        self.yaw.ang = 0
-
-        self.roll.w = 0
-        self.pitch.w = 0
-        self.yaw.w = 0
+        self.roll.reset()
+        self.pitch.reset()
+        self.yaw.reset()
     
-    def reset_pid (self):
-        self.roll.ang_controller.init_e()
-        self.roll.w_controller.init_e()
-        self.pitch.ang_controller.init_e()
-        self.pitch.w_controller.init_e()
-        self.yaw.ang_controller.init_e()
-        self.yaw.w_controller.init_e()
+    def init_pid (self):
+        self.roll.init_pid()
+        self.pitch.init_pid()
+        self.yaw.init_pid()
 
     def setAng (self, roll, pitch, yaw):
         self.roll.ang  = radians(roll)
@@ -270,9 +261,7 @@ class Drone:
 
     class Axis:
         def __init__(self, K_out=None, K_in=None) -> None:
-            self.ang = 0
-            self.w = 0
-
+            self.reset()
             self.ang_controller = Drone.PID(K_out)
             self.w_controller   = Drone.PID(K_in)
 
@@ -285,6 +274,16 @@ class Drone:
 
             e = target_w - self.w
             return self.w_controller.pid(e)
+        
+        def reset (self):
+            self.ang = 0
+            self.w   = 0
+        
+        def init_pid (self):
+            self.w_controller.init_e()
+            self.ang_controller.init_e()
+            
+
 
 
 
@@ -331,16 +330,23 @@ class Drone:
 
 
     class Graph:
-        def __init__(self) -> None:
-            self.f1 = graph(align='right', width=600, height=180, title='roll', ymin=-100, ymax=100)
+        def __init__(self, graph_limit=True) -> None:
+            if graph_limit:
+                ymin = -100
+                ymax =  100
+            else:
+                ymin = None
+                ymax = None
+
+            self.f1 = graph(align='right', width=600, height=180, title='pitch', ymin=ymin, ymax=ymax)
             self.roll = gcurve(graph=self.f1, color=color.red)
             self.roll.plot(0, 0)
 
-            self.f2 = graph(align='right', width=600, height=180, title='pitch', ymin=-100, ymax=100)
+            self.f2 = graph(align='right', width=600, height=180, title='pitch', ymin=ymin, ymax=ymax)
             self.pitch = gcurve(graph=self.f2, color=color.red)
             self.pitch.plot(0, 0)
 
-            self.f3 = graph(align='right', width=600, height=180, title='yaw', ymin=-100, ymax=100)
+            self.f3 = graph(align='right', width=600, height=180, title='yaw', ymin=ymin, ymax=ymax)
             self.yaw = gcurve(graph=self.f3, color=color.red)
             self.yaw.plot(0, 0)
 
@@ -360,14 +366,14 @@ class Drone:
         
         def plot (self, roll, pitch, yaw):
             self.t += 1
-            self.roll.plot(self.t, degrees(roll))
+            self.roll.plot(self.t,  degrees(roll))
             self.pitch.plot(self.t, degrees(pitch))
-            self.yaw.plot(self.t, degrees(yaw))
+            self.yaw.plot(self.t,   degrees(yaw))
         
         def plot_raw (self, roll_mv, pitch_mv, yaw_mv):
-            self.roll_mv.plot(self.t, degrees(roll_mv))
+            self.roll_mv.plot(self.t,  degrees(roll_mv))
             self.pitch_mv.plot(self.t, degrees(pitch_mv))
-            self.yaw_mv.plot(self.t, degrees(yaw_mv))
+            self.yaw_mv.plot(self.t,   degrees(yaw_mv))
 
         def clear (self):
             self.roll.delete()
