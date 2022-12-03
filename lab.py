@@ -10,6 +10,7 @@ class Lab:
     def __init__(self, graph_limit=True) -> None:
         self.drone = Drone(graph_limit=graph_limit)
         self.drone.setLockPos(True)
+        self.TEST_DELAY = False
         self.fetch_setting()
 
     def start_test(self):
@@ -19,6 +20,10 @@ class Lab:
 
             if self.interrupt_occurred():
                 self.fetch_setting()
+
+                if self.TEST_DELAY:
+                    self.drone.time_step()
+                    sleep(1)
 
     def interrupt_occurred (self):
         path = './lab/interrupt.txt'
@@ -49,12 +54,16 @@ class Lab:
                 self.drone.setLockPITCH(not setting['chk_pitch'])
                 self.drone.setLockYaw(not setting['chk_yaw'])
         else:
-            print("'./lab/lab_setting.pickle' doesn't exist.")
-            print("Please open 'tunner.py' first to initialize lab setting")
-            exit()
+            raise Exception("'./lab/lab_setting.pickle' doesn't exist. "
+                           +"Please open 'tunner.py' first to initialize lab setting")
+        
+    def setTestDelay (self, b):
+        self.TEST_DELAY = b
+
 
 
 
 if __name__ == '__main__':
     lab = Lab(graph_limit=False)
+    lab.setTestDelay(True)
     lab.start_test()
