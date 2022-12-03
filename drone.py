@@ -338,7 +338,7 @@ class Drone:
                 ymin = None
                 ymax = None
 
-            self.f1 = graph(align='right', width=600, height=180, title='pitch', ymin=ymin, ymax=ymax)
+            self.f1 = graph(align='right', width=600, height=180, title='roll', ymin=ymin, ymax=ymax)
             self.roll = gcurve(graph=self.f1, color=color.red)
             self.roll.plot(0, 0)
 
