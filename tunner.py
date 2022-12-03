@@ -9,14 +9,14 @@ import numpy as np
 
 
 
-#UI파일 연결
-#단, UI파일은 Python 코드 파일과 같은 디렉토리에 위치해야한다.
-
+# OS에 따라 다른 UI 파일 선택
 if platform.system() == 'Darwin':
     ui_name = 'tunner_gui_mac.ui'
 else:
     ui_name = 'tunnwe_gui_windows.ui'
 
+#UI파일 연결
+#단, UI파일은 Python 코드 파일과 같은 디렉토리에 위치해야한다.
 form_class = uic.loadUiType(ui_name)[0]
 
 #화면을 띄우는데 사용되는 Class 선언
