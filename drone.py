@@ -285,8 +285,6 @@ class Drone:
             
 
 
-
-
     class PID:
         def __init__(self, K=None) -> None:
             self.init_e()

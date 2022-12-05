@@ -34,9 +34,8 @@ class Lab:
             return False
     
     def fetch_setting (self):
-        path = './lab/lab_setting.pickle'
-        if os.path.isfile(path):
-            with open(path, 'rb') as f:
+        try:
+            with open('./lab/lab_setting.pickle', 'rb') as f:
                 setting = pickle.load(f)
 
                 self.drone.clear_graph()
@@ -53,7 +52,7 @@ class Lab:
                 self.drone.setLockRoll(not setting['chk_roll'])
                 self.drone.setLockPITCH(not setting['chk_pitch'])
                 self.drone.setLockYaw(not setting['chk_yaw'])
-        else:
+        except FileNotFoundError:
             raise Exception("'./lab/lab_setting.pickle' doesn't exist. "
                            +"Please open 'tunner.py' first to initialize lab setting")
         
